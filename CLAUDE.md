@@ -13,7 +13,7 @@ Scored by an AI judge on: Code Quality, Security, Efficiency, Testing, Accessibi
 
 ## Stack (TypeScript end to end, one container)
 - `shared/` — zod schemas, inferred types, constants. Single source of truth for API contracts.
-- `server/` — Node 20 + Express, `@google/genai` SDK, helmet, express-rate-limit, pino logger.
+- `server/` — Node 22 (Node 20 is EOL) + Express, `@google/genai` SDK, helmet, express-rate-limit, pino logger.
 - `web/` — Vite + React 18 + Tailwind. No UI kit bloat.
 - Tests: Vitest (+ Testing Library, supertest, vitest-axe). Coverage thresholds: 90% lines on `shared/` and `server/`.
 - Deploy: single Dockerfile on Render (server serves the built `web/`). Keep-alive via cron-job.org.
@@ -69,7 +69,7 @@ commute mode + distance km, work schedule (home/office, hours), outdoor exercise
 ## SECURITY
 helmet with strict CSP; CORS locked to own origin; rate limit `/api/*`; zod validation on every input with length caps;
 Gemini key server-side only; user free-text wrapped as data in the prompt (prompt-injection guard) and length-capped;
-request body size limit; no stack traces in responses; `npm audit` clean.
+request body size limit; no stack traces in responses; `npm audit --omit=dev` clean (dev-only tooling findings are excluded; CI enforces the production audit).
 
 ## EFFICIENCY
 TTL cache for AQI + plan responses (keyed by hash of normalized profile + rounded location + hour);
