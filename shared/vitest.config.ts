@@ -8,7 +8,8 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/index.ts'],
-      thresholds: { lines: 90, functions: 90, branches: 90, statements: 90 },
+      // Contracts are pure declarations: anything untested here is a gap, so hold them at 100%.
+      thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },
   },
 });
