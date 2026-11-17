@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, lint, format, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Format
+        run: npm run format:check
+      - name: Test with coverage
+        run: npm run test:coverage
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker image + healthcheck
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build image
+        run: docker build -t saans:ci .
+      - name: Run container and probe /api/health
+        run: |
+          docker run -d --name saans -p 8080:8080 saans:ci
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/api/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs saans
+          exit 1

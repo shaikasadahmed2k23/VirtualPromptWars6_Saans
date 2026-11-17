@@ -1,0 +1,28 @@
+{
+  "name": "@saans/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Express API for Saans; serves the built web app in production.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsdown",
+    "start": "node dist/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@saans/shared": "^0.1.0",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.2",
+    "tsdown": "^0.23.7",
+    "tsx": "^4.23.15"
+  }
+}

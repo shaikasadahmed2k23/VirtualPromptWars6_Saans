@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+
+# Hand-maintained project brief; kept exactly as written.
+CLAUDE.md
