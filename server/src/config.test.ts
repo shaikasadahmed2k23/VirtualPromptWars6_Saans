@@ -6,6 +6,7 @@ describe('loadConfig', () => {
   it('applies defaults when variables are absent', () => {
     expect(loadConfig({})).toEqual({
       port: 8080,
+      host: '0.0.0.0',
       nodeEnv: 'development',
       logLevel: 'info',
       webDistDir: 'web/dist',
@@ -15,12 +16,14 @@ describe('loadConfig', () => {
   it('reads and coerces provided variables', () => {
     const config = loadConfig({
       PORT: '10000',
+      HOST: '127.0.0.1',
       NODE_ENV: 'production',
       LOG_LEVEL: 'warn',
       WEB_DIST_DIR: '/app/web/dist',
     });
     expect(config).toEqual({
       port: 10000,
+      host: '127.0.0.1',
       nodeEnv: 'production',
       logLevel: 'warn',
       webDistDir: '/app/web/dist',

@@ -6,6 +6,6 @@ const config = loadConfig(process.env);
 const logger = createLogger(config.logLevel);
 const app = createApp({ webDistDir: config.webDistDir });
 
-app.listen(config.port, () => {
-  logger.info({ port: config.port, env: config.nodeEnv }, 'server listening');
+app.listen(config.port, config.host, () => {
+  logger.info({ host: config.host, port: config.port, env: config.nodeEnv }, 'server listening');
 });
