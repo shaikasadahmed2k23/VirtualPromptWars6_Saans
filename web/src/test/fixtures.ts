@@ -1,6 +1,6 @@
 import { vi, type Mock } from 'vitest';
 
-import type { AirResponse, GeoPlace, HourlyNaqi, PlanResponse } from '@saans/shared';
+import type { AirResponse, GeoPlace, HourlyNaqi, PlanResponse, UserProfile } from '@saans/shared';
 
 import type { ApiClient } from '../api/api-client.js';
 
@@ -113,6 +113,18 @@ export const PLAN_RESPONSE: PlanResponse = {
     },
   ],
   source: 'ai',
+  language: 'en',
+};
+
+// A complete, schema-valid household profile (the form's defaults for Delhi).
+export const PROFILE: UserProfile = {
+  location: { kind: 'coords', latitude: 28.65, longitude: 77.23, label: 'Delhi, India' },
+  household: { adults: 2, children: 1, elderly: 0, hasSensitiveMembers: false },
+  commute: { mode: 'twoWheeler', distanceKm: 10 },
+  work: { location: 'office', startHour: 9, endHour: 18, officeDaysPerWeek: 5 },
+  exercise: { timing: 'morning', minutesPerDay: 30 },
+  hasPurifier: false,
+  cookingFuel: 'lpg',
   language: 'en',
 };
 

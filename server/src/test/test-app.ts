@@ -1,16 +1,18 @@
 import type { Express } from 'express';
 import type { Logger } from 'pino';
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
-import type { GeoPlace, PlanResponse } from '@saans/shared';
+import type { PlanResponse } from '@saans/shared';
 
 import { createApp } from '../app.js';
+import type { Clock } from '../lib/clock.js';
+import type { WarnLogger } from '../lib/log.js';
 import { TtlCache } from '../lib/ttl-cache.js';
 import { createLogger } from '../logger.js';
 import type { RateLimits } from '../middleware/security.js';
 import type { PlanGenerator } from '../plan/plan-generator.js';
 import { RuleBasedPlanGenerator } from '../plan/rule-based-plan-generator.js';
-import type { AqiProvider } from '../providers/aqi-provider.js';
+import type { AirQualityForecast, AqiProvider } from '../providers/aqi-provider.js';
 import type { GeocodingProvider } from '../providers/geocoding-provider.js';
 import { AirService } from '../services/air-service.js';
 import {
@@ -19,45 +21,42 @@ import {
   PlanService,
 } from '../services/plan-service.js';
 
-import { FORECAST_SAMPLES, IST_OFFSET_SECONDS, NOW_MS } from './fixtures.js';
+import { DELHI_PLACE, NOW_MS, forecastFixture } from './fixtures.js';
 
-// The full app wired with in-memory fakes: no network, fixed clock.
+// The real services wired with in-memory fakes: no network, fixed clock.
 
-export const DELHI_PLACE: GeoPlace = {
-  id: 1_273_294,
-  name: 'Delhi',
-  region: 'Delhi',
-  country: 'India',
-  latitude: 28.65,
-  longitude: 77.23,
-};
-
-export interface TestAppOptions {
-  readonly webDistDir?: string;
-  readonly rateLimits?: RateLimits;
-  readonly aqi?: AqiProvider;
-  readonly geocoder?: GeocodingProvider;
-  readonly ai?: PlanGenerator | null;
-  readonly logger?: Logger;
+export interface FakeAqi extends AqiProvider {
+  readonly getForecast: Mock<AqiProvider['getForecast']>;
 }
 
-export const fakeAqi = (): AqiProvider => ({
-  getForecast: vi.fn<AqiProvider['getForecast']>(() =>
-    Promise.resolve({
-      timezone: 'Asia/Kolkata',
-      utcOffsetSeconds: IST_OFFSET_SECONDS,
-      samples: FORECAST_SAMPLES,
-    }),
-  ),
+export interface FakeGeocoder extends GeocodingProvider {
+  readonly search: Mock<GeocodingProvider['search']>;
+}
+
+export const fakeAqi = (forecast: AirQualityForecast = forecastFixture()): FakeAqi => ({
+  getForecast: vi.fn<AqiProvider['getForecast']>(() => Promise.resolve(forecast)),
 });
 
-export const fakeGeocoder = (): GeocodingProvider => ({
+export const fakeGeocoder = (): FakeGeocoder => ({
   search: vi.fn<GeocodingProvider['search']>(() => Promise.resolve([DELHI_PLACE])),
 });
 
-export const createTestApp = (options: TestAppOptions = {}): Express => {
-  const clock = { now: () => NOW_MS };
-  const logger = options.logger ?? createLogger('silent');
+export interface TestServicesOptions {
+  readonly aqi?: AqiProvider;
+  readonly geocoder?: GeocodingProvider;
+  readonly ai?: PlanGenerator | null;
+  readonly clock?: Clock;
+  readonly logger?: WarnLogger;
+}
+
+export interface TestServices {
+  readonly air: AirService;
+  readonly plans: PlanService;
+  readonly geocoder: GeocodingProvider;
+}
+
+export const createTestServices = (options: TestServicesOptions = {}): TestServices => {
+  const clock = options.clock ?? { now: () => NOW_MS };
   const geocoder = options.geocoder ?? fakeGeocoder();
   const air = new AirService(options.aqi ?? fakeAqi(), clock);
   const plans = new PlanService({
@@ -71,14 +70,24 @@ export const createTestApp = (options: TestAppOptions = {}): Express => {
       clock,
     }),
     clock,
-    logger,
+    logger: options.logger ?? { warn: vi.fn() },
   });
+  return { air, plans, geocoder };
+};
+
+export interface TestAppOptions extends Omit<TestServicesOptions, 'logger'> {
+  readonly webDistDir?: string;
+  readonly rateLimits?: RateLimits;
+  readonly logger?: Logger;
+}
+
+export const createTestApp = (options: TestAppOptions = {}): Express => {
+  const logger = options.logger ?? createLogger('silent');
+  const { webDistDir, rateLimits, ...services } = options;
   return createApp({
-    webDistDir: options.webDistDir ?? 'missing-web-dist',
+    webDistDir: webDistDir ?? 'missing-web-dist',
     logger,
-    air,
-    geocoder,
-    plans,
-    ...(options.rateLimits === undefined ? {} : { rateLimits: options.rateLimits }),
+    ...createTestServices({ ...services, logger }),
+    ...(rateLimits === undefined ? {} : { rateLimits }),
   });
 };

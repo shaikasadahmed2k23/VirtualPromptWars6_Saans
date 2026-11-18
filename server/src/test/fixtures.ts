@@ -1,4 +1,10 @@
-import type { HourlyAirSample, NaqiResult, OutdoorWindow, UserProfile } from '@saans/shared';
+import type {
+  GeoPlace,
+  HourlyAirSample,
+  NaqiResult,
+  OutdoorWindow,
+  UserProfile,
+} from '@saans/shared';
 
 import type { PlanContext } from '../plan/plan-generator.js';
 import { toPromptProfile } from '../plan/prompt.js';
@@ -15,6 +21,16 @@ export const PROFILE: UserProfile = {
   hasPurifier: false,
   cookingFuel: 'lpg',
   language: 'en',
+};
+
+// What the geocoder returns for "Delhi".
+export const DELHI_PLACE: GeoPlace = {
+  id: 1_273_294,
+  name: 'Delhi',
+  region: 'Delhi',
+  country: 'India',
+  latitude: 28.65,
+  longitude: 77.23,
 };
 
 export const window = (overrides: Partial<OutdoorWindow> = {}): OutdoorWindow => ({

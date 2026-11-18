@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AIR_RESPONSE, DELHI, PLAN_RESPONSE } from '../test/fixtures.js';
+import { AIR_RESPONSE, DELHI, PLAN_RESPONSE, PROFILE } from '../test/fixtures.js';
 
 import { ApiError, createApiClient, type FetchFn } from './api-client.js';
 
@@ -42,11 +42,10 @@ describe('createApiClient', () => {
 
   it('POSTs the profile as JSON for a plan', async () => {
     const { fetchFn, client } = clientReturning(json(PLAN_RESPONSE));
-    const profile = { language: 'en' } as never;
-    await expect(client.createPlan(profile)).resolves.toEqual(PLAN_RESPONSE);
+    await expect(client.createPlan(PROFILE)).resolves.toEqual(PLAN_RESPONSE);
     const init = fetchFn.mock.calls[0]?.[1];
     expect(init?.method).toBe('POST');
-    expect(init?.body).toBe(JSON.stringify({ profile }));
+    expect(init?.body).toBe(JSON.stringify({ profile: PROFILE }));
   });
 
   it('maps the server error code', async () => {

@@ -1,19 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { Language, PlanResponse } from '@saans/shared';
 
 import { buildAirSnapshot } from '../domain/air-snapshot.js';
-import { TtlCache } from '../lib/ttl-cache.js';
-import type { AqiProvider } from '../providers/aqi-provider.js';
-import { AirService } from '../services/air-service.js';
-import {
-  PLAN_CACHE_MAX_ENTRIES,
-  PLAN_CACHE_TTL_MS,
-  PlanService,
-} from '../services/plan-service.js';
-import { FORECAST_SAMPLES, PROFILE, context, window } from '../test/fixtures.js';
+import { FORECAST_SAMPLES, PROFILE, context, forecastFixture, window } from '../test/fixtures.js';
+import { createTestServices, fakeAqi } from '../test/test-app.js';
 
-import { buildFallbackContent, RuleBasedPlanGenerator } from './rule-based-plan-generator.js';
+import { buildFallbackContent } from './rule-based-plan-generator.js';
 
 interface Case {
   readonly language: Language;
@@ -83,27 +76,12 @@ describe('fallback plan wording knows which day a window is on', () => {
 });
 
 const planAt = async (instantUtc: string, utcOffsetSeconds: number): Promise<PlanResponse> => {
-  const aqi: AqiProvider = {
-    getForecast: vi.fn(() =>
-      Promise.resolve({ timezone: 'Asia/Kolkata', utcOffsetSeconds, samples: FORECAST_SAMPLES }),
-    ),
-  };
-  const clock = { now: () => Date.parse(instantUtc) };
-  const service = new PlanService({
-    air: new AirService(aqi, clock),
-    geocoder: { search: () => Promise.resolve([]) },
-    aiGenerator: null,
-    fallbackGenerator: new RuleBasedPlanGenerator(),
-    cache: new TtlCache<string, PlanResponse>({
-      ttlMs: PLAN_CACHE_TTL_MS,
-      maxEntries: PLAN_CACHE_MAX_ENTRIES,
-      clock,
-    }),
-    clock,
-    logger: { warn: vi.fn() },
+  const { plans } = createTestServices({
+    aqi: fakeAqi(forecastFixture({ utcOffsetSeconds })),
+    clock: { now: () => Date.parse(instantUtc) },
   });
   const location = { kind: 'coords', latitude: 28.6, longitude: 77.2 } as const;
-  return service.createPlan({ ...PROFILE, location });
+  return plans.createPlan({ ...PROFILE, location });
 };
 
 describe('PlanService time awareness (the server runs in UTC)', () => {

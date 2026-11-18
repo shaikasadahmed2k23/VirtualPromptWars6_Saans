@@ -1,37 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  planResponseSchema,
-  type GeoPlace,
-  type PlanContent,
-  type PlanResponse,
-  type UserProfile,
-} from '@saans/shared';
+import { planResponseSchema, type PlanContent, type UserProfile } from '@saans/shared';
 
 import { NotFoundError, UpstreamError } from '../lib/errors.js';
-import { TtlCache } from '../lib/ttl-cache.js';
 import type { PlanGenerator } from '../plan/plan-generator.js';
-import { RuleBasedPlanGenerator } from '../plan/rule-based-plan-generator.js';
-import type { AqiProvider } from '../providers/aqi-provider.js';
-import type { GeocodingProvider } from '../providers/geocoding-provider.js';
-import { FORECAST_SAMPLES, IST_OFFSET_SECONDS, NOW_MS, PROFILE } from '../test/fixtures.js';
+import { FORECAST_SAMPLES, NOW_MS, PROFILE, forecastFixture } from '../test/fixtures.js';
+import { createTestServices, fakeAqi, fakeGeocoder } from '../test/test-app.js';
 
-import { AirService } from './air-service.js';
-import {
-  PLAN_CACHE_MAX_ENTRIES,
-  PLAN_CACHE_TTL_MS,
-  PlanService,
-  planCacheKey,
-} from './plan-service.js';
-
-const DELHI: GeoPlace = {
-  id: 1,
-  name: 'Delhi',
-  region: 'Delhi',
-  country: 'India',
-  latitude: 28.65,
-  longitude: 77.23,
-};
+import { planCacheKey } from './plan-service.js';
 
 const aiContent = (impactIds: string[]): PlanContent => ({
   summary: 'AI summary.',
@@ -42,32 +18,11 @@ const aiContent = (impactIds: string[]): PlanContent => ({
 });
 
 const setup = (options: { ai?: PlanGenerator | null; samples?: typeof FORECAST_SAMPLES } = {}) => {
-  const aqi = {
-    getForecast: vi.fn<AqiProvider['getForecast']>(() =>
-      Promise.resolve({
-        timezone: 'Asia/Kolkata',
-        utcOffsetSeconds: IST_OFFSET_SECONDS,
-        samples: options.samples ?? FORECAST_SAMPLES,
-      }),
-    ),
-  };
-  const geocoder = { search: vi.fn<GeocodingProvider['search']>(() => Promise.resolve([DELHI])) };
+  const aqi = fakeAqi(forecastFixture({ samples: options.samples ?? FORECAST_SAMPLES }));
+  const geocoder = fakeGeocoder();
   const logger = { warn: vi.fn() };
-  const clock = { now: () => NOW_MS };
-  const service = new PlanService({
-    air: new AirService(aqi, clock),
-    geocoder,
-    aiGenerator: options.ai ?? null,
-    fallbackGenerator: new RuleBasedPlanGenerator(),
-    cache: new TtlCache<string, PlanResponse>({
-      ttlMs: PLAN_CACHE_TTL_MS,
-      maxEntries: PLAN_CACHE_MAX_ENTRIES,
-      clock,
-    }),
-    clock,
-    logger,
-  });
-  return { service, aqi, geocoder, logger };
+  const { plans } = createTestServices({ aqi, geocoder, ai: options.ai ?? null, logger });
+  return { service: plans, aqi, geocoder, logger };
 };
 
 describe('PlanService', () => {

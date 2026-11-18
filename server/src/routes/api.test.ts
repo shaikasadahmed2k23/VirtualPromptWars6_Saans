@@ -12,8 +12,8 @@ import {
 import { GeocodingUnavailableError, UpstreamError } from '../lib/errors.js';
 import type { PlanGenerator } from '../plan/plan-generator.js';
 import type { AqiProvider } from '../providers/aqi-provider.js';
-import { FORECAST_SAMPLES, IST_OFFSET_SECONDS, PROFILE } from '../test/fixtures.js';
-import { createTestApp } from '../test/test-app.js';
+import { PROFILE, forecastFixture } from '../test/fixtures.js';
+import { createTestApp, fakeAqi } from '../test/test-app.js';
 
 const errorCode = (body: unknown): string => apiErrorSchema.parse(body).error.code;
 const errorMessage = (body: unknown): string => apiErrorSchema.parse(body).error.message;
@@ -63,15 +63,7 @@ describe('GET /api/air', () => {
   });
 
   it('flags old data and keeps it out of the browser cache', async () => {
-    const aqi: AqiProvider = {
-      getForecast: () =>
-        Promise.resolve({
-          timezone: 'Asia/Kolkata',
-          utcOffsetSeconds: IST_OFFSET_SECONDS,
-          samples: FORECAST_SAMPLES,
-          staleMinutes: 42,
-        }),
-    };
+    const aqi = fakeAqi(forecastFixture({ staleMinutes: 42 }));
     const res = await request(createTestApp({ aqi })).get('/api/air?lat=28.61&lon=77.21');
     expect(res.status).toBe(200);
     expect(airResponseSchema.parse(res.body).staleMinutes).toBe(42);

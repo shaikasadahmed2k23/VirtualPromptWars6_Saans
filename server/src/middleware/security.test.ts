@@ -16,7 +16,8 @@ describe('rate limiting', () => {
     const res = await request(app).post('/api/plan').send({ profile: PROFILE });
     expect(res.status).toBe(429);
     expect(apiErrorSchema.parse(res.body).error.code).toBe('RATE_LIMITED');
-    expect(res.headers['ratelimit-policy']).toBeDefined();
+    // IETF draft-8 policy: quota 2 requests per 60-second window.
+    expect(res.headers['ratelimit-policy']).toMatch(/q=2; w=60/);
   });
 
   it('limits every API route and counts clients separately behind the proxy', async () => {

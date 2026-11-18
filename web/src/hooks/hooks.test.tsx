@@ -2,15 +2,13 @@ import { act, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '../api/api-client.js';
-import { AIR_RESPONSE, DELHI, PLAN_RESPONSE, fakeApi } from '../test/fixtures.js';
+import { AIR_RESPONSE, DELHI, PLAN_RESPONSE, PROFILE, fakeApi } from '../test/fixtures.js';
 import { renderHookWithProviders } from '../test/render.js';
 
 import { useAirQuality } from './use-air-quality.js';
 import { useAsyncTask } from './use-async-task.js';
 import { SEARCH_DEBOUNCE_MS, useCitySearch } from './use-city-search.js';
 import { usePlan } from './use-plan.js';
-
-const PROFILE = { language: 'en' } as never;
 
 afterEach(() => {
   vi.useRealTimers();
