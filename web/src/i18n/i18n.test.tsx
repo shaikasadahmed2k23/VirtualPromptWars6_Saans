@@ -36,6 +36,17 @@ describe('dictionaries', () => {
     }
   });
 
+  it('names the plan section by the next 24 hours, not by today', () => {
+    expect(EN.plan.heading).toBe('Your next 24 hours');
+    expect(HI.plan.heading).toBe('आपके अगले 24 घंटे');
+    expect([EN.time.today, EN.time.tomorrow, HI.time.today, HI.time.tomorrow]).toEqual([
+      'Today',
+      'Tomorrow',
+      'आज',
+      'कल',
+    ]);
+  });
+
   it('interpolates numbers into both languages', () => {
     expect(EN.plan.exposure(105, 70)).toContain('105 µg');
     expect(HI.plan.co2(9.79)).toContain('9.79');

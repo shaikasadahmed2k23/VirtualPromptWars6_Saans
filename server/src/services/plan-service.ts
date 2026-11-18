@@ -11,6 +11,7 @@ import {
 } from '@saans/shared';
 
 import { startOfHour } from '../domain/local-time.js';
+import { scheduleRoutine } from '../domain/routine-schedule.js';
 import type { Clock } from '../lib/clock.js';
 import { NotFoundError } from '../lib/errors.js';
 import type { WarnLogger } from '../lib/log.js';
@@ -126,6 +127,7 @@ export class PlanService {
       currentAqi,
       bestWindow,
       worstWindow,
+      routine: scheduleRoutine(words.routine, snapshot.localTime),
       impacts: impacts.map((facts) => ({
         ...facts,
         title: titles[facts.id].title,

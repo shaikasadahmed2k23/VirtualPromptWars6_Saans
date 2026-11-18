@@ -1,11 +1,13 @@
 import { useId, type JSX } from 'react';
 
-import type { RoutineBlock } from '@saans/shared';
+import type { ScheduledRoutineBlock } from '@saans/shared';
+
+import { useI18n } from '../../i18n/i18n-context.js';
 
 /** Props for {@link RoutineTimeline}. */
 export interface RoutineTimelineProps {
   readonly title: string;
-  readonly blocks: readonly RoutineBlock[];
+  readonly blocks: readonly ScheduledRoutineBlock[];
 }
 
 /**
@@ -14,6 +16,7 @@ export interface RoutineTimelineProps {
  * @returns The timeline, or nothing when there are no blocks.
  */
 export function RoutineTimeline({ title, blocks }: RoutineTimelineProps): JSX.Element | null {
+  const { t } = useI18n();
   const headingId = useId();
   if (blocks.length === 0) return null;
   return (
@@ -23,9 +26,9 @@ export function RoutineTimeline({ title, blocks }: RoutineTimelineProps): JSX.El
       </h3>
       <ol className="space-y-3 border-l-2 border-accent pl-4">
         {blocks.map((block) => (
-          <li key={`${block.start}-${block.title}`}>
+          <li key={`${block.day}-${block.start}-${block.title}`}>
             <p className="font-semibold tabular-nums text-accent-strong">
-              <time>{block.start}</time>–<time>{block.end}</time>
+              {t.time[block.day]} <time>{block.start}</time>–<time>{block.end}</time>
             </p>
             <p className="font-medium">{block.title}</p>
             <p className="text-muted">{block.advice}</p>

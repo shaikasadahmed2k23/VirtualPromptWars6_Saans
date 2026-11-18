@@ -69,11 +69,11 @@ describe('RuleBasedPlanGenerator', () => {
     });
   });
 
-  it('orders routine blocks chronologically and ends with the night block', () => {
+  it('builds a block per window plus the night block; PlanService orders them from now', () => {
     const { routine } = buildFallbackContent(context());
     expect(routine.map((block) => [block.start, block.end])).toEqual([
-      ['07:00', '09:00'],
       ['14:00', '16:00'],
+      ['07:00', '09:00'],
       ['22:00', '06:00'],
     ]);
   });

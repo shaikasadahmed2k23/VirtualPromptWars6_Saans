@@ -54,6 +54,7 @@ export const HI: Messages = {
       unsupported: 'यह ब्राउज़र लोकेशन नहीं बता सकता। अपना शहर खोजें।',
     },
   },
+  time: { today: 'आज', tomorrow: 'कल' },
   air: {
     heading: 'अभी की हवा',
     empty: 'हवा की गुणवत्ता देखने के लिए लोकेशन चुनें।',
@@ -71,6 +72,8 @@ export const HI: Messages = {
     summary: 'घंटेवार NAQI। ऊँची पट्टी यानी ज़्यादा गंदी हवा।',
     best: 'अगले 24 घंटों में सबसे अच्छा समय',
     worst: 'अगले 24 घंटों में सबसे ख़राब समय',
+    nowBest: 'अभी बाहर निकलने का अच्छा समय है',
+    nowWorst: 'अभी बाहर निकलना सबसे ख़राब है',
     windowsNote: 'सबसे अच्छा और सबसे ख़राब समय सिर्फ़ अगले 24 घंटों में से चुना जाता है।',
     boundary: 'अगले 24 घंटे यहाँ पूरे',
     window: (span, naqi, category) => `${span}, औसत NAQI ${String(naqi)} (${category})`,
@@ -142,7 +145,7 @@ export const HI: Messages = {
     errorSummary: (count) => `कृपया नीचे ${String(count)} जगह सुधार करें।`,
   },
   plan: {
-    heading: 'आज की आपकी योजना',
+    heading: 'आपके अगले 24 घंटे',
     empty: 'अपने परिवार की जानकारी भरें और “मेरी योजना बनाएँ” दबाएँ।',
     loading: 'आपकी योजना बन रही है…',
     sourceAi: 'AI से निजी योजना',

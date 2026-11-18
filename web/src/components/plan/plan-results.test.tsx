@@ -32,6 +32,41 @@ describe('PlanResults', () => {
     expect((await axe(container)).violations).toEqual([]);
   });
 
+  it('labels each routine block with its day, in the plan’s order', () => {
+    const plan = {
+      ...PLAN_RESPONSE,
+      routine: [
+        {
+          start: '18:00',
+          end: '20:00',
+          title: 'Evening walk',
+          advice: 'Go.',
+          day: 'today' as const,
+        },
+        {
+          start: '07:00',
+          end: '09:00',
+          title: 'Stay in',
+          advice: 'Wait.',
+          day: 'tomorrow' as const,
+        },
+      ],
+    };
+    renderWithProviders(<PlanResults plan={plan} />);
+    const items = within(screen.getByRole('region', { name: 'Your day' })).getAllByRole('listitem');
+    expect(items[0]).toHaveTextContent('Today 18:00–20:00');
+    expect(items[1]).toHaveTextContent('Tomorrow 07:00–09:00');
+  });
+
+  it('shows Hindi day words on a Hindi plan', () => {
+    const plan = { ...PLAN_RESPONSE, language: 'hi' as const };
+    renderWithProviders(<PlanResults plan={plan} />, { language: 'hi' });
+    const [first] = within(screen.getByRole('region', { name: 'आपका दिन' })).getAllByRole(
+      'listitem',
+    );
+    expect(first).toHaveTextContent(/^आज 07:00–09:00/);
+  });
+
   it('hides zero figures and marks the plan language', () => {
     const plan = {
       ...PLAN_RESPONSE,

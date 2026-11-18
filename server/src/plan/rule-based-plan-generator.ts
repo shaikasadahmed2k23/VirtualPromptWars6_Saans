@@ -14,6 +14,7 @@ import { clockTime } from '../domain/local-time.js';
 import { PLAN_COPY } from './copy/copies.js';
 import { explainImpact } from './copy/explain-impact.js';
 import type { AirTier, PlanCopy } from './copy/plan-copy.js';
+import { windowWhen } from './copy/window-when.js';
 import type { PlanContext, PlanGenerator } from './plan-generator.js';
 
 const TIER_BY_CATEGORY: Readonly<Record<NaqiCategory, AirTier>> = {
@@ -30,16 +31,15 @@ const LOW_CARBON_MODES: ReadonlySet<string> = new Set(['metro', 'walk', 'cycle']
 
 const pad = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
 
-const block = (window: OutdoorWindow, tip: Tip): RoutineBlock & { readonly sortKey: string } => ({
+const block = (window: OutdoorWindow, tip: Tip): RoutineBlock => ({
   start: clockTime(window.start),
   end: clockTime(window.end),
   title: tip.title,
   advice: tip.detail,
-  sortKey: window.start,
 });
 
 function buildRoutine({ bestWindow, worstWindow }: PlanContext, copy: PlanCopy): RoutineBlock[] {
-  const blocks = [];
+  const blocks: RoutineBlock[] = [];
   if (bestWindow !== null) {
     const tip = bestWindow.allUnsafe ? copy.routine.outdoorUnsafe : copy.routine.outdoor;
     blocks.push(block(bestWindow, tip));
@@ -47,12 +47,10 @@ function buildRoutine({ bestWindow, worstWindow }: PlanContext, copy: PlanCopy):
   if (worstWindow !== null && worstWindow.start !== bestWindow?.start) {
     blocks.push(block(worstWindow, copy.routine.stayIn));
   }
-  const chronological = blocks
-    .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
-    .map(({ start, end, title, advice }) => ({ start, end, title, advice }));
   const night = copy.routine.night;
   return [
-    ...chronological,
+    // PlanService orders every plan's blocks from now, so the order here does not matter.
+    ...blocks,
     {
       start: pad(WAKING_HOURS.end),
       end: pad(WAKING_HOURS.start),
@@ -96,7 +94,12 @@ export function dayTier(context: PlanContext): AirTier {
 export function buildFallbackContent(context: PlanContext): PlanContent {
   const copy = PLAN_COPY[context.language];
   return {
-    summary: copy.summary(context.currentAqi, context.bestWindow, context.locationLabel),
+    summary: copy.summary({
+      aqi: context.currentAqi,
+      bestWindow: context.bestWindow,
+      location: context.locationLabel,
+      when: windowWhen(context),
+    }),
     routine: buildRoutine(context, copy),
     indoorHacks: [...copy.indoorHacks[dayTier(context)]],
     alternatives: buildAlternatives(context, copy),

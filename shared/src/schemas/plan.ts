@@ -47,6 +47,11 @@ export const routineBlockSchema = z.strictObject({
   advice: text('advice'),
 });
 
+/** A routine block placed on the calendar: which day (at the location) its next run falls on. */
+export const scheduledRoutineBlockSchema = routineBlockSchema.extend({
+  day: oneOf('day', ['today', 'tomorrow']),
+});
+
 /** A short, practical suggestion (indoor hack or sustainable alternative). */
 export const tipSchema = z.strictObject({ title: title(), detail: text('detail') });
 
@@ -62,6 +67,8 @@ export const planContentSchema = z.strictObject({
 
 /** Response of `POST /api/plan`. */
 export const planResponseSchema = planContentSchema.omit({ impactExplanations: true }).extend({
+  /** Blocks in the order they come up from now, each labelled today or tomorrow. */
+  routine: z.array(scheduledRoutineBlockSchema).max(INPUT_LIMITS.routineBlocksMax),
   location: z.strictObject({
     label: title(),
     latitude: z.number(),
@@ -85,6 +92,8 @@ export type ImpactFacts = z.infer<typeof impactFactsSchema>;
 export type ImpactItem = z.infer<typeof impactItemSchema>;
 /** One block of the daily routine. */
 export type RoutineBlock = z.infer<typeof routineBlockSchema>;
+/** A routine block labelled with the day it next occurs. */
+export type ScheduledRoutineBlock = z.infer<typeof scheduledRoutineBlockSchema>;
 /** A short practical suggestion. */
 export type Tip = z.infer<typeof tipSchema>;
 /** Words produced by a plan generator. */

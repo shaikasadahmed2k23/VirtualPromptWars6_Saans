@@ -142,7 +142,7 @@ describe('API envelopes', () => {
       bestWindow: window,
       worstWindow: null,
       summary: 'A very poor air day.',
-      routine: [{ start: '14:00', end: '16:00', title: 'Walk', advice: 'Go now.' }],
+      routine: [{ start: '14:00', end: '16:00', title: 'Walk', advice: 'Go', day: 'today' }],
       indoorHacks: [{ title: 'Close windows', detail: 'Until 16:00.' }],
       alternatives: [{ title: 'Take the metro', detail: 'Enclosed and low-carbon.' }],
       impacts: [

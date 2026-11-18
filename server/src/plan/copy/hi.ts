@@ -1,4 +1,4 @@
-import { OVERNIGHT_INDOOR_HOURS } from '@saans/shared';
+import { OVERNIGHT_INDOOR_HOURS, startsNow } from '@saans/shared';
 
 import { avoided, timeSpan, type PlanCopy } from './plan-copy.js';
 
@@ -34,13 +34,18 @@ export const HI_COPY: PlanCopy = {
     veryPoor: 'बहुत ख़राब',
     severe: 'गंभीर',
   },
-  summary: (aqi, bestWindow, location) => {
+  days: { today: 'आज', tomorrow: 'कल' },
+  nowIsGood: 'अभी बाहर निकलने का अच्छा समय है।',
+  summary: ({ aqi, bestWindow, location, when }) => {
     const now = `${location} में अभी हवा की गुणवत्ता ${HI_COPY.categoryNames[aqi.category]} है (NAQI ${String(aqi.value)})।`;
     if (bestWindow === null) {
       return `${now} अगले 24 घंटों में कोई साफ़ समय नहीं दिखता, इसलिए ज़्यादातर घर के अंदर रहने की योजना बनाएँ।`;
     }
+    if (!bestWindow.allUnsafe && startsNow(bestWindow.start, when.localNow)) {
+      return `${now} ${HI_COPY.nowIsGood}`;
+    }
     const verdict = bestWindow.allUnsafe ? 'सबसे कम ख़राब' : 'सबसे साफ़';
-    return `${now} अगले 24 घंटों में बाहर निकलने का ${verdict} समय ${timeSpan(bestWindow)} है।`;
+    return `${now} अगले 24 घंटों में बाहर निकलने का ${verdict} समय ${timeSpan(bestWindow, when)} है।`;
   },
   routine: {
     outdoor: {
@@ -137,9 +142,9 @@ export const HI_COPY: PlanCopy = {
     },
     'exercise-shift': {
       title: 'सबसे साफ़ समय में व्यायाम करें',
-      explain: (facts, { bestWindow, worstWindow }) => {
+      explain: (facts, { bestWindow, worstWindow, when }) => {
         const { ug, pct } = avoided(facts);
-        return `${timeSpan(worstWindow)} की जगह ${timeSpan(bestWindow)} व्यायाम करने से व्यायाम के दौरान साँस से जाने वाला PM2.5 लगभग ${ug} µg (${pct}%) घटता है। अनुमान।`;
+        return `${timeSpan(worstWindow, when)} की जगह ${timeSpan(bestWindow, when)} व्यायाम करने से व्यायाम के दौरान साँस से जाने वाला PM2.5 लगभग ${ug} µg (${pct}%) घटता है। अनुमान।`;
       },
     },
     'exercise-indoors': {
@@ -151,9 +156,9 @@ export const HI_COPY: PlanCopy = {
     },
     'close-windows': {
       title: 'चरम समय में खिड़कियाँ बंद रखें',
-      explain: (facts, { worstWindow }) => {
+      explain: (facts, { worstWindow, when }) => {
         const { ug, pct } = avoided(facts);
-        return `${timeSpan(worstWindow)} खिड़कियाँ बंद रखने से उस समय घर में हर व्यक्ति के साँस से जाने वाला PM2.5 लगभग ${ug} µg (${pct}%) घटता है। अनुमान।`;
+        return `${timeSpan(worstWindow, when)} खिड़कियाँ बंद रखने से उस समय घर में हर व्यक्ति के साँस से जाने वाला PM2.5 लगभग ${ug} µg (${pct}%) घटता है। अनुमान।`;
       },
     },
     'purifier-run': {

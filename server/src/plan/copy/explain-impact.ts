@@ -2,6 +2,7 @@ import type { KnownImpactFacts, PlanContext } from '../plan-generator.js';
 
 import { PLAN_COPY } from './copies.js';
 import type { ImpactCopyContext } from './plan-copy.js';
+import { windowWhen } from './window-when.js';
 
 /**
  * Deterministic explanation for one impact: the whole text of offline plans, and the
@@ -12,6 +13,7 @@ import type { ImpactCopyContext } from './plan-copy.js';
  */
 export function explainImpact(facts: KnownImpactFacts, context: PlanContext): string {
   const copyContext: ImpactCopyContext = {
+    when: windowWhen(context),
     bestWindow: context.bestWindow,
     worstWindow: context.worstWindow,
     commuteMode: context.profile.commute.mode,

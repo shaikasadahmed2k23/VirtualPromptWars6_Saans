@@ -1,4 +1,4 @@
-import { OVERNIGHT_INDOOR_HOURS } from '@saans/shared';
+import { OVERNIGHT_INDOOR_HOURS, startsNow } from '@saans/shared';
 
 import { avoided, timeSpan, type PlanCopy } from './plan-copy.js';
 
@@ -34,13 +34,18 @@ export const EN_COPY: PlanCopy = {
     veryPoor: 'Very poor',
     severe: 'Severe',
   },
-  summary: (aqi, bestWindow, location) => {
+  days: { today: 'today', tomorrow: 'tomorrow' },
+  nowIsGood: 'Now is a good time to be outside.',
+  summary: ({ aqi, bestWindow, location, when }) => {
     const now = `Air quality in ${location} is ${EN_COPY.categoryNames[aqi.category]} right now (NAQI ${String(aqi.value)}).`;
     if (bestWindow === null) {
       return `${now} There is no clear cleaner window in the next 24 hours, so plan to stay mostly indoors.`;
     }
+    if (!bestWindow.allUnsafe && startsNow(bestWindow.start, when.localNow)) {
+      return `${now} ${EN_COPY.nowIsGood}`;
+    }
     const verdict = bestWindow.allUnsafe ? 'least-bad' : 'cleanest';
-    return `${now} The ${verdict} time to be outside in the next 24 hours is ${timeSpan(bestWindow)}.`;
+    return `${now} The ${verdict} time to be outside in the next 24 hours is ${timeSpan(bestWindow, when)}.`;
   },
   routine: {
     outdoor: {
@@ -137,9 +142,9 @@ export const EN_COPY: PlanCopy = {
     },
     'exercise-shift': {
       title: 'Exercise in the cleanest window',
-      explain: (facts, { bestWindow, worstWindow }) => {
+      explain: (facts, { bestWindow, worstWindow, when }) => {
         const { ug, pct } = avoided(facts);
-        return `Exercising ${timeSpan(bestWindow)} instead of ${timeSpan(worstWindow)} cuts the PM2.5 you breathe during your workout by about ${ug} µg (${pct}%). Estimate.`;
+        return `Exercising ${timeSpan(bestWindow, when)} instead of ${timeSpan(worstWindow, when)} cuts the PM2.5 you breathe during your workout by about ${ug} µg (${pct}%). Estimate.`;
       },
     },
     'exercise-indoors': {
@@ -151,9 +156,9 @@ export const EN_COPY: PlanCopy = {
     },
     'close-windows': {
       title: 'Keep windows shut at the peak',
-      explain: (facts, { worstWindow }) => {
+      explain: (facts, { worstWindow, when }) => {
         const { ug, pct } = avoided(facts);
-        return `Keeping windows closed ${timeSpan(worstWindow)} cuts the PM2.5 each person at home breathes in that time by about ${ug} µg (${pct}%). Estimate.`;
+        return `Keeping windows closed ${timeSpan(worstWindow, when)} cuts the PM2.5 each person at home breathes in that time by about ${ug} µg (${pct}%). Estimate.`;
       },
     },
     'purifier-run': {

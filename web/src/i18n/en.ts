@@ -59,6 +59,7 @@ export const EN = {
       unsupported: 'This browser cannot share your location. Search for your city instead.',
     },
   },
+  time: { today: 'Today', tomorrow: 'Tomorrow' },
   air: {
     heading: 'Air right now',
     empty: 'Choose a location to see its air quality.',
@@ -76,6 +77,8 @@ export const EN = {
     summary: 'Hourly NAQI. Taller bars mean dirtier air.',
     best: 'Best window in the next 24 hours',
     worst: 'Worst window in the next 24 hours',
+    nowBest: 'Now is a good time to be outside',
+    nowWorst: 'Now is the worst time to be outside',
     windowsNote: 'Best and worst windows are picked from the next 24 hours only.',
     boundary: 'Next 24 hours end here',
     window: (span: string, naqi: number, category: string): string =>
@@ -149,7 +152,7 @@ export const EN = {
       `Please fix ${String(count)} ${count === 1 ? 'field' : 'fields'} below.`,
   },
   plan: {
-    heading: 'Your plan for today',
+    heading: 'Your next 24 hours',
     empty: 'Fill in your household details and press “Make my plan”.',
     loading: 'Making your plan…',
     sourceAi: 'AI-personalised',

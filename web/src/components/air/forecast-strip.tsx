@@ -3,6 +3,8 @@ import type { JSX } from 'react';
 import {
   HOURS_PER_DAY,
   NAQI_MAX_INDEX,
+  relativeDay,
+  startsNow,
   type AirResponse,
   type HourlyNaqi,
   type OutdoorWindow,
@@ -38,8 +40,20 @@ export function ForecastStrip({ data }: ForecastStripProps): JSX.Element {
         <p className="text-sm text-muted">{t.forecast.summary}</p>
         <p className="text-sm text-muted">{t.forecast.windowsNote}</p>
       </figcaption>
-      <WindowSummary label={t.forecast.best} window={data.bestWindow} marker="bg-accent" />
-      <WindowSummary label={t.forecast.worst} window={data.worstWindow} marker="bg-ink" />
+      <WindowSummary
+        label={t.forecast.best}
+        window={data.bestWindow}
+        now={data.current.time}
+        nowText={t.forecast.nowBest}
+        marker="bg-accent"
+      />
+      <WindowSummary
+        label={t.forecast.worst}
+        window={data.worstWindow}
+        now={data.current.time}
+        nowText={t.forecast.nowWorst}
+        marker="bg-ink"
+      />
       <div aria-hidden="true" className="overflow-x-auto pb-2">
         <ol className="flex h-36 min-w-max items-end gap-0.5 pt-6">
           {data.hourly.map((hour, index) => (
@@ -97,19 +111,30 @@ function BoundaryLabel(): JSX.Element {
 interface WindowSummaryProps {
   readonly label: string;
   readonly window: OutdoorWindow | null;
+  /** Current local time at the location, which decides today or tomorrow. */
+  readonly now: string;
+  /** Said in place of a clock time when the window is already under way. */
+  readonly nowText: string;
   readonly marker: string;
 }
 
-function WindowSummary({ label, window, marker }: WindowSummaryProps): JSX.Element | null {
+function WindowSummary({
+  label,
+  window,
+  now,
+  nowText,
+  marker,
+}: WindowSummaryProps): JSX.Element | null {
   const { t } = useI18n();
   if (window === null) return null;
+  const when = startsNow(window.start, now)
+    ? nowText
+    : `${t.time[relativeDay(window.start, now)]} ${windowSpan(window)}`;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <span aria-hidden="true" className={`inline-block h-1 w-5 rounded ${marker}`} />
       <span className="font-semibold">{label}:</span>
-      <span>
-        {t.forecast.window(windowSpan(window), window.meanNaqi, t.categories[window.category])}
-      </span>
+      <span>{t.forecast.window(when, window.meanNaqi, t.categories[window.category])}</span>
       <CategoryBadge category={window.category} />
       {window.allUnsafe && <span className="w-full text-danger">{t.forecast.allUnsafe}</span>}
     </div>
