@@ -29,6 +29,7 @@ describe('findBestWindow / findWorstWindow', () => {
       end: `${DATE}T16:00`,
       hours: 2,
       meanNaqi: 50,
+      meanPm25: 30,
       category: 'good',
       allUnsafe: false,
     });
@@ -74,6 +75,7 @@ describe('findBestWindow / findWorstWindow', () => {
       end: `${DATE}T08:00`,
       hours: 2,
       meanNaqi: 470,
+      meanPm25: 340,
       category: 'severe',
       allUnsafe: true,
     });

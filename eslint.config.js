@@ -45,6 +45,11 @@ export default tseslint.config(
       '@eslint-community/eslint-comments/require-description': 'error',
       '@eslint-community/eslint-comments/no-unlimited-disable': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
+      // `const { dropped: _dropped, ...kept } = value` is the idiomatic way to omit a field.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
       '@typescript-eslint/explicit-module-boundary-types': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       'import/no-duplicates': 'error',
@@ -83,7 +88,9 @@ export default tseslint.config(
           publicOnly: true,
           require: {
             FunctionDeclaration: true,
-            ArrowFunctionExpression: true,
+            // Exported arrow consts are covered by the VariableDeclaration context below;
+            // arrows used as values inside an already-documented object need no own block.
+            ArrowFunctionExpression: false,
             FunctionExpression: true,
             ClassDeclaration: true,
             MethodDefinition: true,

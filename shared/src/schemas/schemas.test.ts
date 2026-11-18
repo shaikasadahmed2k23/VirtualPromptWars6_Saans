@@ -7,7 +7,10 @@ import {
   planResponseSchema,
   userProfileSchema,
   type UserProfile,
-} from './schemas.js';
+  airResponseSchema,
+  clockTimeSchema,
+  geocodeResponseSchema,
+} from '../index.js';
 
 const validProfile: UserProfile = {
   location: { kind: 'city', name: 'Delhi' },
@@ -115,30 +118,36 @@ describe('API envelopes', () => {
     expect(planRequestSchema.safeParse({}).success).toBe(false);
   });
 
+  const window = {
+    start: '2026-11-18T14:00',
+    end: '2026-11-18T16:00',
+    hours: 2,
+    meanNaqi: 180,
+    meanPm25: 75.5,
+    category: 'moderate',
+    allUnsafe: false,
+  };
+  const currentAqi = {
+    value: 320,
+    category: 'veryPoor',
+    dominantPollutant: 'pm25',
+    advisory: 'Stay in.',
+  };
+
   it('accepts a complete plan response', () => {
-    const window = {
-      start: '2026-11-18T14:00',
-      end: '2026-11-18T16:00',
-      hours: 2,
-      meanNaqi: 180,
-      category: 'moderate',
-      allUnsafe: false,
-    };
     const response = {
       location: { label: 'Delhi', latitude: 28.61, longitude: 77.21 },
       generatedAt: '2026-11-18T05:30:00+05:30',
-      currentAqi: {
-        value: 320,
-        category: 'veryPoor',
-        dominantPollutant: 'pm25',
-        advisory: 'Stay in.',
-      },
+      currentAqi,
       bestWindow: window,
       worstWindow: null,
-      routine: [{ start: window.start, end: window.end, title: 'Walk', advice: 'Go now.' }],
+      summary: 'A very poor air day.',
+      routine: [{ start: '14:00', end: '16:00', title: 'Walk', advice: 'Go now.' }],
+      indoorHacks: [{ title: 'Close windows', detail: 'Until 16:00.' }],
+      alternatives: [{ title: 'Take the metro', detail: 'Enclosed and low-carbon.' }],
       impacts: [
         {
-          id: 'metro-commute',
+          id: 'commute-switch',
           category: 'commute',
           title: 'Take the metro',
           explanation: 'Saves CO2.',
@@ -146,9 +155,49 @@ describe('API envelopes', () => {
           co2SavedKgPerWeek: 13.6,
         },
       ],
-      generator: 'rules',
+      source: 'fallback',
     };
     expect(planResponseSchema.safeParse(response).success).toBe(true);
+    expect(planResponseSchema.safeParse({ ...response, source: 'gemini' }).success).toBe(false);
+  });
+
+  it('accepts an air response', () => {
+    const hour = {
+      time: '2026-11-18T14:00',
+      pm25: 75.5,
+      pm10: 120,
+      naqi: 180,
+      category: 'moderate',
+    };
+    const response = {
+      timezone: 'Asia/Kolkata',
+      current: { ...currentAqi, time: '2026-11-18T14:00' },
+      hourly: [hour],
+      bestWindow: window,
+      worstWindow: window,
+    };
+    expect(airResponseSchema.safeParse(response).success).toBe(true);
+  });
+
+  it('accepts geocoding results', () => {
+    const place = {
+      id: 1,
+      name: 'Delhi',
+      region: null,
+      country: 'India',
+      latitude: 28.6,
+      longitude: 77.2,
+    };
+    expect(geocodeResponseSchema.safeParse({ results: [place] }).success).toBe(true);
+  });
+
+  it.each([
+    ['07:30', true],
+    ['23:59', true],
+    ['24:00', false],
+    ['7:30', false],
+  ])('clock time %s valid: %s', (time, valid) => {
+    expect(clockTimeSchema.safeParse(time).success).toBe(valid);
   });
 
   it('accepts only known error codes', () => {

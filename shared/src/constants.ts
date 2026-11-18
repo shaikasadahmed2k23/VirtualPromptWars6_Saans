@@ -59,6 +59,41 @@ export const CO2_KG_PER_PASSENGER_KM = {
   cycle: 0,
 } as const satisfies Record<CommuteMode, number>;
 
+/** How hard a traveller breathes and how shielded they are on each commute mode. */
+export interface CommuteExposure {
+  readonly activity: ActivityLevel;
+  readonly protection: ProtectionLevel;
+}
+
+/** Exposure profile per commute mode (product estimates, labelled as such in the UI). */
+export const COMMUTE_EXPOSURE = {
+  // Estimate: seated in a closed car; cabin air behaves like a closed home.
+  petrolCar: { activity: 'rest', protection: 'indoorClosed' },
+  // Estimate: riding in open traffic air.
+  twoWheeler: { activity: 'light', protection: 'none' },
+  // Estimate: Indian city buses usually run with windows open.
+  bus: { activity: 'rest', protection: 'none' },
+  // Estimate: closed, air-conditioned coaches.
+  metro: { activity: 'rest', protection: 'indoorClosed' },
+  walk: { activity: 'light', protection: 'none' },
+  cycle: { activity: 'moderate', protection: 'none' },
+} as const satisfies Record<CommuteMode, CommuteExposure>;
+
+/**
+ * Product assumption: typical door-to-door peak-hour speed in Indian metro cities, used to
+ * turn commute distance into time exposed. Labelled as an estimate wherever it is used.
+ */
+export const AVERAGE_COMMUTE_SPEED_KMH = 20;
+
+/** Each office day is a return trip. */
+export const TRIPS_PER_OFFICE_DAY = 2;
+
+/** Product assumption: hours a household spends asleep indoors, the main purifier window. */
+export const OVERNIGHT_INDOOR_HOURS = 8;
+
+/** Minutes in an hour; converts exercise minutes to hours. */
+export const MINUTES_PER_HOUR = 60;
+
 /** Pollutants that feed the NAQI calculation. */
 export const POLLUTANTS = ['pm25', 'pm10'] as const;
 
@@ -133,6 +168,37 @@ export const NAQI_BREAKPOINTS = {
   ],
 } as const satisfies Record<Pollutant, readonly ConcentrationBand[]>;
 
+/** Interface and plan languages. */
+export const LANGUAGES = ['en', 'hi'] as const;
+
+/** One of {@link LANGUAGES}. */
+export type Language = (typeof LANGUAGES)[number];
+
+/** Household cooking fuels. */
+export const COOKING_FUELS = ['lpg', 'png', 'electric', 'biomass', 'kerosene', 'coal'] as const;
+
+/** One of {@link COOKING_FUELS}. */
+export type CookingFuel = (typeof COOKING_FUELS)[number];
+
+/** Areas an impact recommendation can belong to. */
+export const IMPACT_CATEGORIES = [
+  'routine',
+  'indoor',
+  'commute',
+  'cooking',
+  'heating',
+  'waste',
+] as const;
+
+/** One of {@link IMPACT_CATEGORIES}. */
+export type ImpactCategory = (typeof IMPACT_CATEGORIES)[number];
+
+/** Who wrote a plan's words: Gemini, or the deterministic offline fallback. */
+export const PLAN_SOURCES = ['ai', 'fallback'] as const;
+
+/** One of {@link PLAN_SOURCES}. */
+export type PlanSource = (typeof PLAN_SOURCES)[number];
+
 /** Hours of the day (local, [start, end)) during which outdoor windows are suggested. */
 export const WAKING_HOURS = {
   // Product assumption: typical family day runs 06:00–22:00.
@@ -162,6 +228,8 @@ export const DISPLAY_DECIMALS = {
   co2Kg: 2,
   // CPCB reports NAQI as an integer.
   naqi: 0,
+  // Product choice: concentrations shown to 0.1 µg/m³, as Open-Meteo reports them.
+  concentration: 1,
 } as const;
 
 /** Validation limits for user-supplied input (product limits, not physical ones). */
@@ -179,7 +247,8 @@ export const INPUT_LIMITS = {
   titleMax: 120,
   textMax: 600,
   idMax: 64,
-  routineBlocksMax: 24,
+  routineBlocksMax: 12,
+  tipsMax: 8,
   impactItemsMax: 20,
   // Upper sanity bound (µg/m³); real-world hourly peaks in Delhi stay below ~1,500.
   concentrationMax: 5000,

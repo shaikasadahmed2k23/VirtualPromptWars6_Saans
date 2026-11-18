@@ -8,11 +8,9 @@ import {
 } from '@saans/shared';
 
 import { DomainError } from './domain-error.js';
+import { epochHourToLocal, localEpochHour, localToEpochMs } from './local-time.js';
 import { categoryForIndex, computeNaqi } from './naqi.js';
 import { roundTo } from './rounding.js';
-
-const MS_PER_HOUR = 3_600_000;
-const ISO_MINUTE_LENGTH = 'YYYY-MM-DDTHH:MM'.length;
 
 /** Shape of the window to search for, in local hours of day. */
 export interface WindowOptions {
@@ -35,12 +33,14 @@ interface ScoredHour {
   readonly epochHour: number;
   readonly hourOfDay: number;
   readonly naqi: number;
+  readonly pm25: number;
   readonly severe: boolean;
 }
 
 interface Candidate {
   readonly first: ScoredHour;
   readonly mean: number;
+  readonly meanPm25: number;
 }
 
 type IsBetter = (candidate: number, current: number) => boolean;
@@ -59,20 +59,15 @@ function assertValidOptions({ lengthHours, wakingStart, wakingEnd }: WindowOptio
   }
 }
 
-// Times are local wall-clock strings; reading them as UTC gives a gap-free hour count.
-const toEpochMs = (time: string): number => Date.parse(`${time.slice(0, ISO_MINUTE_LENGTH)}Z`);
-const formatHour = (epochHour: number): string =>
-  new Date(epochHour * MS_PER_HOUR).toISOString().slice(0, ISO_MINUTE_LENGTH);
-
 function scoreHours(samples: readonly HourlyAirSample[]): ScoredHour[] {
   return samples
     .map((sample) => {
-      const epochMs = toEpochMs(sample.time);
       const naqi = computeNaqi(sample);
       return {
-        epochHour: Math.floor(epochMs / MS_PER_HOUR),
-        hourOfDay: new Date(epochMs).getUTCHours(),
+        epochHour: localEpochHour(sample.time),
+        hourOfDay: new Date(localToEpochMs(sample.time)).getUTCHours(),
         naqi: naqi.value,
+        pm25: sample.pm25,
         severe: naqi.category === 'severe',
       };
     })
@@ -90,7 +85,8 @@ function candidateWindows(hours: readonly ScoredHour[], options: WindowOptions):
       return [];
     }
     const mean = slice.reduce((sum, hour) => sum + hour.naqi, 0) / lengthHours;
-    return [{ first, mean }];
+    const meanPm25 = slice.reduce((sum, hour) => sum + hour.pm25, 0) / lengthHours;
+    return [{ first, mean, meanPm25 }];
   });
 }
 
@@ -116,10 +112,11 @@ function selectWindow(
   }
   const meanNaqi = roundTo(chosen.mean, DISPLAY_DECIMALS.naqi);
   return {
-    start: formatHour(chosen.first.epochHour),
-    end: formatHour(chosen.first.epochHour + options.lengthHours),
+    start: epochHourToLocal(chosen.first.epochHour),
+    end: epochHourToLocal(chosen.first.epochHour + options.lengthHours),
     hours: options.lengthHours,
     meanNaqi,
+    meanPm25: roundTo(chosen.meanPm25, DISPLAY_DECIMALS.concentration),
     category: categoryForIndex(meanNaqi),
     allUnsafe: everyWakingHourSevere(hours, options),
   };
