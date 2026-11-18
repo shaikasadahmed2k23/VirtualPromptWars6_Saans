@@ -2,7 +2,12 @@ import { useRef, useState, type FormEvent, type JSX, type Ref } from 'react';
 
 import type { UserProfile } from '@saans/shared';
 
-import { useProfileForm, type FieldErrors, type FieldName } from '../../hooks/use-profile-form.js';
+import {
+  useProfileForm,
+  type FieldErrorKey,
+  type FieldErrors,
+  type FieldName,
+} from '../../hooks/use-profile-form.js';
 import { useI18n } from '../../i18n/i18n-context.js';
 import type { SelectedPlace } from '../location/selected-place.js';
 import { SectionCard } from '../ui/section-card.js';
@@ -94,7 +99,7 @@ function ErrorSummary({
 }: ErrorSummaryProps): JSX.Element | null {
   const { t } = useI18n();
   const labels = useFieldLabels();
-  const fields = Object.keys(errors) as FieldName[];
+  const fields = Object.entries(errors) as [FieldName, FieldErrorKey][];
   if (fields.length === 0 && !needsLocation) return null;
   return (
     <div
@@ -108,10 +113,10 @@ function ErrorSummary({
         <>
           <p className="font-medium text-danger">{t.profile.errorSummary(fields.length)}</p>
           <ul className="mt-2 list-disc pl-5">
-            {fields.map((name) => (
+            {fields.map(([name, errorKey]) => (
               <li key={name}>
                 <a href={`#${fieldId(name)}`} className="text-danger underline">
-                  {labels[name]}: {t.profile.fieldErrors[errors[name] ?? 'count']}
+                  {labels[name]}: {t.profile.fieldErrors[errorKey]}
                 </a>
               </li>
             ))}

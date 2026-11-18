@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EN } from './en.js';
 import { HI } from './hi.js';
@@ -65,6 +65,9 @@ describe('I18nProvider', () => {
   });
 
   it('refuses to work outside the provider', () => {
+    // React logs the error it is about to rethrow; keep the test output clean.
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(() => renderHook(() => useI18n())).toThrow('inside <I18nProvider>');
+    consoleError.mockRestore();
   });
 });

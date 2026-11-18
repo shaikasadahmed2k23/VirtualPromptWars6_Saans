@@ -20,7 +20,7 @@ const chooseDelhi = async (user: ReturnType<typeof userEvent.setup>): Promise<vo
 
 describe('App', () => {
   it('renders landmarks, one h1, a working skip link and no axe violations when empty', async () => {
-    const { container } = renderWithProviders(<App geolocation={null} />);
+    const { container } = renderWithProviders(<App />);
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);

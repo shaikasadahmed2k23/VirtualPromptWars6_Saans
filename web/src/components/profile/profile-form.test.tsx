@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { UserProfile } from '@saans/shared';
+
 import { renderWithProviders } from '../../test/render.js';
 
 import { ProfileForm } from './profile-form.js';
@@ -43,6 +45,21 @@ describe('ProfileForm', () => {
         language: 'en',
       }),
     );
+  });
+
+  it('sends every choice the household makes', async () => {
+    const { onSubmit, user } = setup();
+    await user.selectOptions(screen.getByLabelText('Where do you work?'), 'home');
+    await user.selectOptions(screen.getByLabelText('Outdoor exercise'), 'none');
+    await user.selectOptions(screen.getByLabelText('Cooking fuel'), 'biomass');
+    await user.click(screen.getByLabelText(/asthma, heart or lung problems/));
+    await submit(user);
+    const profile = onSubmit.mock.calls[0]?.[0] as UserProfile | undefined;
+    expect(profile?.work.location).toBe('home');
+    expect(profile?.exercise.timing).toBe('none');
+    expect(profile?.cookingFuel).toBe('biomass');
+    expect(profile?.household.hasSensitiveMembers).toBe(true);
+    expect(profile).not.toHaveProperty('notes');
   });
 
   it('blocks submission and explains each invalid field inline and in a focused summary', async () => {
