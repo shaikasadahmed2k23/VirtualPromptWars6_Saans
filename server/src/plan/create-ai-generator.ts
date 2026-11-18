@@ -1,16 +1,17 @@
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
-import type { AppConfig } from '../config.js';
+import type { AppConfig, GeminiThinkingLevel } from '../config.js';
 import type { InfoLogger } from '../lib/log.js';
 
 import { GeminiPlanGenerator, type GenerateContentRequest } from './gemini-plan-generator.js';
 import type { PlanGenerator } from './plan-generator.js';
 
+// Our config's plain strings mapped onto the SDK's own `ThinkingLevel` enum.
 const SDK_LEVELS = {
   low: ThinkingLevel.LOW,
   medium: ThinkingLevel.MEDIUM,
   high: ThinkingLevel.HIGH,
-} as const;
+} as const satisfies Record<GeminiThinkingLevel, ThinkingLevel>;
 
 // The SDK types the level as its own enum; translate our plain string at the boundary.
 function toSdkRequest({ config, ...rest }: GenerateContentRequest) {

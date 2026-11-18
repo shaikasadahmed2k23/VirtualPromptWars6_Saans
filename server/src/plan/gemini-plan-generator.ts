@@ -1,5 +1,6 @@
 import type { PlanContent } from '@saans/shared';
 
+import type { GeminiThinkingLevel } from '../config.js';
 import { createSystemClock, type Clock } from '../lib/clock.js';
 import { UpstreamError } from '../lib/errors.js';
 import type { InfoLogger } from '../lib/log.js';
@@ -9,10 +10,10 @@ import { GEMINI_RESPONSE_SCHEMA, geminiPlanSchema, toPlanContent } from './gemin
 import type { PlanContext, PlanGenerator } from './plan-generator.js';
 import { SYSTEM_INSTRUCTION, buildUserPrompt } from './prompt.js';
 
-/** Time budget for one Gemini call; two attempts must still fit a responsive request. */
-export const GEMINI_TIMEOUT_MS = 8000;
-/** Total time all models together may take before the caller falls back to the offline plan. */
-export const GEMINI_TOTAL_BUDGET_MS = 20_000;
+// Time budget for one Gemini call; two attempts must still fit a responsive request.
+const GEMINI_TIMEOUT_MS = 8000;
+// Total time all models together may take before the caller falls back to the offline plan.
+const GEMINI_TOTAL_BUDGET_MS = 20_000;
 // Low temperature: we want consistent, factual phrasing, not creativity.
 const TEMPERATURE = 0.2;
 
@@ -27,12 +28,9 @@ export interface GenerateContentRequest {
     readonly temperature: number;
     readonly abortSignal: AbortSignal;
     /** Present only when a thinking level is configured. */
-    readonly thinkingConfig?: { readonly thinkingLevel: ThinkingLevel };
+    readonly thinkingConfig?: { readonly thinkingLevel: GeminiThinkingLevel };
   };
 }
-
-/** Reasoning effort requested from thinking-capable models. */
-export type ThinkingLevel = 'low' | 'medium' | 'high';
 
 /** The Gemini call, injected so tests never reach the network. */
 export type GenerateContentFn = (
@@ -53,7 +51,7 @@ export interface GeminiPlanGeneratorOptions {
   readonly totalBudgetMs?: number;
   readonly clock?: Clock;
   /** Lowers reasoning time on models that think by default; omit to send no setting. */
-  readonly thinkingLevel?: ThinkingLevel;
+  readonly thinkingLevel?: GeminiThinkingLevel;
   /**
    * Receives one warning per failed attempt (reason only; never the key, prompt or output) and
    * one note naming the model that served the plan.

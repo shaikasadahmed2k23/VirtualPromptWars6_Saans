@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
-import { INPUT_LIMITS, boundedNumber, type AirResponse } from '@saans/shared';
+import { INPUT_LIMITS, MS_PER_SECOND, boundedNumber, type AirResponse } from '@saans/shared';
 
+import { AQI_CACHE_TTL_MS } from '../providers/aqi-provider.js';
 import type { AirService } from '../services/air-service.js';
 
 import { parseRequest } from './validate.js';
 
-// Matches the server-side forecast cache: the numbers cannot change faster than this.
-const CACHE_CONTROL = 'private, max-age=900';
+// Derived from the server-side forecast cache: the numbers cannot change faster than this.
+const CACHE_CONTROL = `private, max-age=${String(AQI_CACHE_TTL_MS / MS_PER_SECOND)}`;
 
 // Query values arrive as strings; empty strings must not coerce to 0.
 const coordinate = (label: string, limit: number) =>

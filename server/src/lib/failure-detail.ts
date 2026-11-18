@@ -1,4 +1,4 @@
-import { ZodError } from 'zod';
+import { ZodError, type core } from 'zod';
 
 /** A description of a failure that is safe to log: no request bodies, URLs, keys or stacks. */
 export interface FailureDetail {
@@ -19,19 +19,41 @@ const MAX_DEPTH = 3;
 const MAX_ISSUES = 5;
 const MAX_MESSAGE_LENGTH = 200;
 
-function describeSchemaFailure(error: ZodError): FailureDetail {
-  const issues = error.issues
+const propertyOf = (thrown: unknown, key: string): unknown =>
+  typeof thrown === 'object' && thrown !== null ? Reflect.get(thrown, key) : undefined;
+
+/**
+ * The numeric `status` an error carries (HTTP clients and SDKs attach one), if any.
+ * @param thrown - Any caught value.
+ * @returns The status, or undefined when there is none.
+ */
+export function statusOf(thrown: unknown): number | undefined {
+  const status = propertyOf(thrown, 'status');
+  return typeof status === 'number' ? status : undefined;
+}
+
+/**
+ * The first few zod issues as `path: <detail>` strings, for a log line.
+ * @param error - The schema failure.
+ * @param detail - Which part of each issue to show. Callers logging untrusted data pick the
+ *   issue `code`, since a message can quote the offending value.
+ * @returns At most five summaries.
+ */
+export function summarizeIssues(
+  error: ZodError,
+  detail: (issue: core.$ZodIssue) => string,
+): string[] {
+  return error.issues
     .slice(0, MAX_ISSUES)
-    .map((issue) => `${issue.path.join('.')}: ${issue.message}`);
-  return { name: 'ZodError', message: 'Schema validation failed', issues };
+    .map((issue) => `${issue.path.join('.')}: ${detail(issue)}`);
 }
 
 function describeScalars(error: Error): Pick<FailureDetail, 'code' | 'status'> {
-  const code: unknown = Reflect.get(error, 'code');
-  const status: unknown = Reflect.get(error, 'status');
+  const code = propertyOf(error, 'code');
+  const status = statusOf(error);
   return {
     ...(typeof code === 'string' ? { code } : {}),
-    ...(typeof status === 'number' ? { status } : {}),
+    ...(status === undefined ? {} : { status }),
   };
 }
 
@@ -45,7 +67,8 @@ function describeScalars(error: Error): Pick<FailureDetail, 'code' | 'status'> {
  */
 export function describeFailure(thrown: unknown, depth = 0): FailureDetail {
   if (thrown instanceof ZodError) {
-    return describeSchemaFailure(thrown);
+    const issues = summarizeIssues(thrown, (issue) => issue.message);
+    return { name: 'ZodError', message: 'Schema validation failed', issues };
   }
   if (!(thrown instanceof Error)) {
     return { name: typeof thrown, message: '' };

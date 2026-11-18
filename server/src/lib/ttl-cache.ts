@@ -83,23 +83,16 @@ export class TtlCache<K, V> {
     return { value: entry.value, ageMs: this.options.clock.now() - storedAt };
   }
 
-  private pastGrace(entry: Entry<V>): boolean {
-    const grace = this.options.staleGraceMs ?? 0;
-    return entry.expiresAt + grace <= this.options.clock.now();
-  }
-
   /**
    * Stores a value, evicting the oldest entry if the cache is full.
    * @param key - Cache key.
    * @param value - Value to store; it expires `ttlMs` from now.
    */
   set(key: K, value: V): void {
+    // Re-inserting moves an overwritten key to the newest position.
     this.entries.delete(key);
-    if (this.entries.size >= this.options.maxEntries) {
-      // The map is non-empty here (size >= maxEntries >= 1), so the first key exists.
-      this.entries.delete(this.entries.keys().next().value as K);
-    }
     this.entries.set(key, { value, expiresAt: this.options.clock.now() + this.options.ttlMs });
+    this.evictOverflow();
   }
 
   /**
@@ -117,5 +110,20 @@ export class TtlCache<K, V> {
     const value = await load();
     this.set(key, value);
     return value;
+  }
+
+  private pastGrace(entry: Entry<V>): boolean {
+    const grace = this.options.staleGraceMs ?? 0;
+    return entry.expiresAt + grace <= this.options.clock.now();
+  }
+
+  // Map iteration order is insertion order, so keys come oldest write first.
+  private evictOverflow(): void {
+    for (const oldest of this.entries.keys()) {
+      if (this.entries.size <= this.options.maxEntries) {
+        return;
+      }
+      this.entries.delete(oldest);
+    }
   }
 }

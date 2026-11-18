@@ -3,6 +3,7 @@ import {
   startsNow,
   type Language,
   type OutdoorWindow,
+  type RelativeDay,
   type UserProfile,
 } from '@saans/shared';
 
@@ -49,8 +50,13 @@ const ESCAPED_LESS_THAN = `\\u${'<'.charCodeAt(0).toString(16).padStart(4, '0')}
 const asData = (value: unknown): string =>
   JSON.stringify(value, null, 2).replaceAll('<', ESCAPED_LESS_THAN);
 
-// Windows carry their day and whether they are under way, computed from the location's clock.
-const withTiming = (window: OutdoorWindow | null, localTime: string): object | null =>
+/** A window as Gemini sees it: with its day and whether it is under way, by the location's clock. */
+export interface TimedWindow extends OutdoorWindow {
+  readonly day: RelativeDay;
+  readonly startsNow: boolean;
+}
+
+const withTiming = (window: OutdoorWindow | null, localTime: string): TimedWindow | null =>
   window === null
     ? null
     : {

@@ -17,6 +17,9 @@ const optionalSecret = z
 /** How hard a thinking-capable Gemini model reasons before answering; lower is faster. */
 export const GEMINI_THINKING_LEVELS = ['low', 'medium', 'high'] as const;
 
+/** One of {@link GEMINI_THINKING_LEVELS}. */
+export type GeminiThinkingLevel = (typeof GEMINI_THINKING_LEVELS)[number];
+
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(MAX_PORT).default(DEFAULT_PORT),
   HOST: z.string().min(1).default(DEFAULT_HOST),
@@ -41,7 +44,7 @@ export interface AppConfig {
   /** Gemini model ids in the order to try them; empty when none is configured, never hardcoded. */
   readonly geminiModels: readonly string[];
   /** Reasoning effort for models that think by default; null sends no setting (works for every model). */
-  readonly geminiThinkingLevel: (typeof GEMINI_THINKING_LEVELS)[number] | null;
+  readonly geminiThinkingLevel: GeminiThinkingLevel | null;
 }
 
 // GEMINI_MODELS ("a,b") is the ordered list; the single GEMINI_MODEL keeps working when it is unset.

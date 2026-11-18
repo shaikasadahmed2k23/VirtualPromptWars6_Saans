@@ -1,6 +1,7 @@
 import { ZodError } from 'zod';
 
 import { AppError, UpstreamError } from '../lib/errors.js';
+import { statusOf, summarizeIssues } from '../lib/failure-detail.js';
 
 /** Why an AI attempt failed, in a form that is safe to log (no key, prompt or model output). */
 export interface AiFailure {
@@ -19,17 +20,14 @@ export class AiTimeoutError extends UpstreamError {}
 /** Gemini explained an impact id that the plan did not offer. */
 export class AiUnknownImpactError extends UpstreamError {}
 
-const MAX_ISSUES = 5;
-
-const httpStatus = (error: unknown): number | undefined => {
-  const status = (error as { status?: unknown } | null)?.status;
-  return typeof status === 'number' ? status : undefined;
-};
-
 // The generator wraps its per-attempt failures in an AggregateError; the last one is the verdict.
 const lastAttemptFailure = (thrown: unknown): unknown => {
   const cause = thrown instanceof Error ? thrown.cause : undefined;
-  return cause instanceof AggregateError ? (cause.errors.at(-1) as unknown) : thrown;
+  if (!(cause instanceof AggregateError)) {
+    return thrown;
+  }
+  const attempts: readonly unknown[] = cause.errors;
+  return attempts.at(-1);
 };
 
 /**
@@ -41,10 +39,8 @@ export function classifyAiFailure(thrown: unknown): AiFailure {
   const error = lastAttemptFailure(thrown);
   const errorClass = error instanceof Error ? error.constructor.name : typeof error;
   if (error instanceof ZodError) {
-    const issues = error.issues
-      .slice(0, MAX_ISSUES)
-      .map((issue) => `${issue.path.join('.')}: ${issue.code}`);
-    return { reason: 'schema', errorClass, issues };
+    // Issue codes only: a zod message can quote the model's output.
+    return { reason: 'schema', errorClass, issues: summarizeIssues(error, (issue) => issue.code) };
   }
   if (error instanceof SyntaxError) {
     return { reason: 'bad_json', errorClass };
@@ -56,7 +52,7 @@ export function classifyAiFailure(thrown: unknown): AiFailure {
     return { reason: 'unknown_impact', errorClass };
   }
   // Our own errors carry a `status` too (the one we would answer with); it is not Gemini's.
-  const status = error instanceof AppError ? undefined : httpStatus(error);
+  const status = error instanceof AppError ? undefined : statusOf(error);
   return status === undefined
     ? { reason: 'other', errorClass }
     : { reason: 'http_error', errorClass, status };

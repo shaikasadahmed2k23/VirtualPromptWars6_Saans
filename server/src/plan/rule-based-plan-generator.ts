@@ -2,6 +2,7 @@ import {
   NAQI_CATEGORIES,
   WAKING_HOURS,
   clockTime,
+  type CommuteMode,
   type CookingFuel,
   type NaqiCategory,
   type OutdoorWindow,
@@ -26,7 +27,7 @@ const TIER_BY_CATEGORY: Readonly<Record<NaqiCategory, AirTier>> = {
 };
 
 const DIRTY_FUELS: ReadonlySet<CookingFuel> = new Set(['biomass', 'kerosene', 'coal']);
-const LOW_CARBON_MODES: ReadonlySet<string> = new Set(['metro', 'walk', 'cycle']);
+const LOW_CARBON_MODES: ReadonlySet<CommuteMode> = new Set(['metro', 'walk', 'cycle']);
 
 const pad = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
 
