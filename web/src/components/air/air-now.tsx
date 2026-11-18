@@ -52,6 +52,11 @@ function AirReading({ data }: { readonly data: AirResponse }): JSX.Element {
           {t.air.asOf(current.time.slice(-5))} · {t.air.indicative}
         </p>
       </div>
+      {data.staleMinutes !== null && (
+        <p role="status" className="rounded-xl border border-line bg-line/20 p-3 text-sm">
+          {t.air.stale(data.staleMinutes)}
+        </p>
+      )}
       <ForecastStrip data={data} />
     </div>
   );

@@ -4,6 +4,7 @@ import type { ErrorRequestHandler, RequestHandler } from 'express';
 import type { ApiError, ApiErrorCode } from '@saans/shared';
 
 import { AppError, NotFoundError, PayloadTooLargeError, ValidationError } from '../lib/errors.js';
+import { describeFailure } from '../lib/failure-detail.js';
 import type { ErrorLogger } from '../lib/log.js';
 
 const INTERNAL_STATUS = 500;
@@ -64,7 +65,8 @@ export function createErrorHandler(logger: ErrorLogger): ErrorRequestHandler {
       res.status(INTERNAL_STATUS).json(errorBody('INTERNAL_ERROR', GENERIC_MESSAGE));
       return;
     }
-    logger.warn({ reqId: req.id, code: appError.code, cause: appError.cause }, appError.message);
+    const cause = appError.cause === undefined ? undefined : describeFailure(appError.cause);
+    logger.warn({ reqId: req.id, code: appError.code, cause }, appError.message);
     res.status(appError.status).json(errorBody(appError.code, appError.message));
   };
 }

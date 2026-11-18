@@ -11,6 +11,9 @@ import {
   pollutantSchema,
 } from './primitives.js';
 
+// Server keeps old forecasts for at most 6 h past their TTL; allow a day so the contract has slack.
+const MAX_STALE_MINUTES = 24 * 60;
+
 const concentration = (label: string): z.ZodNumber =>
   boundedNumber(label, 0, INPUT_LIMITS.concentrationMax);
 
@@ -56,6 +59,8 @@ export const airResponseSchema = z.strictObject({
   hourly: z.array(hourlyNaqiSchema).max(2 * HOURS_PER_DAY),
   bestWindow: outdoorWindowSchema.nullable(),
   worstWindow: outdoorWindowSchema.nullable(),
+  /** Minutes old the readings are when live data was unavailable; null when they are live. */
+  staleMinutes: boundedInt('staleMinutes', 0, MAX_STALE_MINUTES).nullable(),
 });
 
 /** One geocoding match for a city search. */

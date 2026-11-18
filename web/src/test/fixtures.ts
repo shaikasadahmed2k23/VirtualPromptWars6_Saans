@@ -50,6 +50,7 @@ export const AIR_RESPONSE: AirResponse = {
   hourly: Array.from({ length: 42 }, (_, index) => hour(index)),
   bestWindow: BEST_WINDOW,
   worstWindow: WORST_WINDOW,
+  staleMinutes: null,
 };
 
 export const DELHI: GeoPlace = {

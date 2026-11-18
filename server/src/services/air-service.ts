@@ -9,6 +9,8 @@ export interface LocatedSnapshot extends AirSnapshot {
   readonly timezone: string;
   /** Local time at the location when the snapshot was built, `YYYY-MM-DDTHH:MM`. */
   readonly localTime: string;
+  /** Minutes old the data is when Open-Meteo could not be reached; null when it is live. */
+  readonly staleMinutes: number | null;
 }
 
 /** Fetches a forecast and summarises it for "now" at the location. */
@@ -35,6 +37,11 @@ export class AirService {
     if (snapshot === null) {
       throw new UpstreamError('No air quality data is available for this location yet');
     }
-    return { ...snapshot, timezone: forecast.timezone, localTime };
+    return {
+      ...snapshot,
+      timezone: forecast.timezone,
+      localTime,
+      staleMinutes: forecast.staleMinutes ?? null,
+    };
   }
 }

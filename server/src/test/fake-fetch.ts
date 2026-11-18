@@ -23,7 +23,10 @@ export const fetchHanging = vi.fn<FetchFn>(
     }),
 );
 
+// Retries wait zero time so tests stay fast and deterministic.
 export const httpOptions = (fetchFn: FetchFn, timeoutMs = 50): HttpClientOptions => ({
   fetchFn,
   timeoutMs,
+  sleep: () => Promise.resolve(),
+  random: () => 0,
 });

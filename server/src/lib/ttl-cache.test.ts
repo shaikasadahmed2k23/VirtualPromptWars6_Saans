@@ -31,6 +31,42 @@ describe('TtlCache', () => {
     expect(cache.size).toBe(0);
   });
 
+  describe('stale grace', () => {
+    const GRACE_MS = 5000;
+    const graceCache = (clock: Clock): TtlCache<string, number> =>
+      new TtlCache<string, number>({ ttlMs: TTL_MS, maxEntries: 3, clock, staleGraceMs: GRACE_MS });
+
+    it('serves an expired entry as stale, with its age, until the grace runs out', () => {
+      const clock = fakeClock();
+      const cache = graceCache(clock);
+      cache.set('a', 1);
+      clock.advance(TTL_MS + 200);
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.getStale('a')).toEqual({ value: 1, ageMs: TTL_MS + 200 });
+      clock.advance(GRACE_MS);
+      expect(cache.getStale('a')).toBeUndefined();
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.size).toBe(0);
+    });
+
+    it('reports a fresh entry as zero-to-TTL old', () => {
+      const clock = fakeClock();
+      const cache = graceCache(clock);
+      cache.set('a', 1);
+      clock.advance(300);
+      expect(cache.getStale('a')).toEqual({ value: 1, ageMs: 300 });
+    });
+
+    it('keeps nothing stale by default', () => {
+      const clock = fakeClock();
+      const cache = cacheWith(clock);
+      cache.set('a', 1);
+      clock.advance(TTL_MS);
+      expect(cache.getStale('a')).toBeUndefined();
+      expect(cache.getStale('missing')).toBeUndefined();
+    });
+  });
+
   it('returns undefined for keys never stored', () => {
     expect(cacheWith(fakeClock()).get('missing')).toBeUndefined();
   });

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { GeoPlace } from '@saans/shared';
 
-import { UpstreamError } from '../lib/errors.js';
+import { GeocodingUnavailableError } from '../lib/errors.js';
 import { TtlCache } from '../lib/ttl-cache.js';
 import { fetchHanging, fetchResolving, httpOptions, jsonResponse } from '../test/fake-fetch.js';
 
@@ -64,10 +64,13 @@ describe('OpenMeteoGeocodingProvider', () => {
     ['times out', fetchHanging],
     ['sends malformed JSON', fetchResolving(() => new Response('nope'))],
     ['sends an unexpected shape', fetchResolving(() => jsonResponse({ results: [{ id: 'x' }] }))],
-  ])('throws UpstreamError when the API %s', async (_label, fetchFn) => {
-    await expect(
-      new OpenMeteoGeocodingProvider(httpOptions(fetchFn, 10)).search('Delhi'),
-    ).rejects.toBeInstanceOf(UpstreamError);
+  ])('throws GeocodingUnavailableError when the API %s', async (_label, fetchFn) => {
+    const error: unknown = await new OpenMeteoGeocodingProvider(httpOptions(fetchFn, 10))
+      .search('Delhi')
+      .catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(GeocodingUnavailableError);
+    expect(error).toMatchObject({ code: 'GEOCODING_UNAVAILABLE', message: 'City search failed' });
+    expect((error as GeocodingUnavailableError).cause).toBeInstanceOf(Error);
   });
 });
 

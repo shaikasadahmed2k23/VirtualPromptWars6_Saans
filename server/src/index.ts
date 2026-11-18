@@ -11,6 +11,7 @@ import { RuleBasedPlanGenerator } from './plan/rule-based-plan-generator.js';
 import {
   AQI_CACHE_MAX_ENTRIES,
   AQI_CACHE_TTL_MS,
+  AQI_STALE_GRACE_MS,
   CachedAqiProvider,
   type AirQualityForecast,
 } from './providers/aqi-provider.js';
@@ -21,6 +22,7 @@ import {
 } from './providers/geocoding-provider.js';
 import { OpenMeteoAqiProvider } from './providers/open-meteo-aqi-provider.js';
 import { OpenMeteoGeocodingProvider } from './providers/open-meteo-geocoding-provider.js';
+import { StaticFirstGeocodingProvider } from './providers/static-city-geocoding-provider.js';
 import { AirService } from './services/air-service.js';
 import { PLAN_CACHE_MAX_ENTRIES, PLAN_CACHE_TTL_MS, PlanService } from './services/plan-service.js';
 
@@ -28,7 +30,7 @@ import { PLAN_CACHE_MAX_ENTRIES, PLAN_CACHE_TTL_MS, PlanService } from './servic
 const config = loadConfig(process.env);
 const logger = createLogger(config.logLevel);
 const clock = createSystemClock();
-const http = { fetchFn: fetch, timeoutMs: UPSTREAM_TIMEOUT_MS };
+const http = { fetchFn: fetch, timeoutMs: UPSTREAM_TIMEOUT_MS, logger };
 
 const aqi = new CachedAqiProvider(
   new OpenMeteoAqiProvider(http),
@@ -36,15 +38,20 @@ const aqi = new CachedAqiProvider(
     ttlMs: AQI_CACHE_TTL_MS,
     maxEntries: AQI_CACHE_MAX_ENTRIES,
     clock,
+    staleGraceMs: AQI_STALE_GRACE_MS,
   }),
+  logger,
 );
-const geocoder = new CachedGeocodingProvider(
-  new OpenMeteoGeocodingProvider(http),
-  new TtlCache<string, readonly GeoPlace[]>({
-    ttlMs: GEOCODE_CACHE_TTL_MS,
-    maxEntries: GEOCODE_CACHE_MAX_ENTRIES,
-    clock,
-  }),
+// Bundled major cities answer first; the cached upstream is only asked about everything else.
+const geocoder = new StaticFirstGeocodingProvider(
+  new CachedGeocodingProvider(
+    new OpenMeteoGeocodingProvider(http),
+    new TtlCache<string, readonly GeoPlace[]>({
+      ttlMs: GEOCODE_CACHE_TTL_MS,
+      maxEntries: GEOCODE_CACHE_MAX_ENTRIES,
+      clock,
+    }),
+  ),
 );
 const air = new AirService(aqi, clock);
 const plans = new PlanService({

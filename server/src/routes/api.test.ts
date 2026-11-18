@@ -9,10 +9,10 @@ import {
   type PlanContent,
 } from '@saans/shared';
 
-import { UpstreamError } from '../lib/errors.js';
+import { GeocodingUnavailableError, UpstreamError } from '../lib/errors.js';
 import type { PlanGenerator } from '../plan/plan-generator.js';
 import type { AqiProvider } from '../providers/aqi-provider.js';
-import { PROFILE } from '../test/fixtures.js';
+import { FORECAST_SAMPLES, IST_OFFSET_SECONDS, PROFILE } from '../test/fixtures.js';
 import { createTestApp } from '../test/test-app.js';
 
 const errorCode = (body: unknown): string => apiErrorSchema.parse(body).error.code;
@@ -23,6 +23,18 @@ describe('GET /api/geocode', () => {
     const res = await request(createTestApp()).get('/api/geocode').query({ q: 'Delhi' });
     expect(res.status).toBe(200);
     expect(geocodeResponseSchema.parse(res.body).results[0]?.name).toBe('Delhi');
+  });
+
+  it('answers 502 GEOCODING_UNAVAILABLE so the UI can say the city search failed', async () => {
+    const geocoder = {
+      search: () => Promise.reject(new GeocodingUnavailableError('City search failed')),
+    };
+    const res = await request(createTestApp({ geocoder })).get('/api/geocode?q=Smallville');
+    expect(res.status).toBe(502);
+    expect(apiErrorSchema.parse(res.body).error).toEqual({
+      code: 'GEOCODING_UNAVAILABLE',
+      message: 'City search failed',
+    });
   });
 
   it.each([
@@ -46,7 +58,24 @@ describe('GET /api/air', () => {
     expect(body.current).toMatchObject({ time: '2026-11-18T06:00', category: 'veryPoor' });
     expect(body.hourly).toHaveLength(42);
     expect(body.bestWindow?.start).toBe('2026-11-18T14:00');
+    expect(body.staleMinutes).toBeNull();
     expect(res.headers['cache-control']).toBe('private, max-age=900');
+  });
+
+  it('flags old data and keeps it out of the browser cache', async () => {
+    const aqi: AqiProvider = {
+      getForecast: () =>
+        Promise.resolve({
+          timezone: 'Asia/Kolkata',
+          utcOffsetSeconds: IST_OFFSET_SECONDS,
+          samples: FORECAST_SAMPLES,
+          staleMinutes: 42,
+        }),
+    };
+    const res = await request(createTestApp({ aqi })).get('/api/air?lat=28.61&lon=77.21');
+    expect(res.status).toBe(200);
+    expect(airResponseSchema.parse(res.body).staleMinutes).toBe(42);
+    expect(res.headers['cache-control']).toBe('no-store');
   });
 
   it.each([

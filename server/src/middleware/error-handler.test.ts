@@ -52,6 +52,29 @@ describe('createErrorHandler', () => {
     expect(JSON.stringify(res.body)).not.toContain('ECONNRESET');
   });
 
+  it('logs the cause as readable fields, since a raw Error serializes to {}', async () => {
+    const logger = fakeLogger();
+    const reset = Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
+    const cause = new TypeError('fetch failed', { cause: reset });
+    await request(
+      appThatThrows(() => {
+        throw new UpstreamError('Location search is unavailable', { cause });
+      }, logger),
+    ).get('/boom');
+    expect(logger.warn).toHaveBeenCalledWith(
+      {
+        reqId: 'req-123',
+        code: 'UPSTREAM_ERROR',
+        cause: {
+          name: 'TypeError',
+          message: 'fetch failed',
+          cause: { name: 'Error', message: 'read ECONNRESET', code: 'ECONNRESET' },
+        },
+      },
+      'Location search is unavailable',
+    );
+  });
+
   it('turns unknown errors into a generic 500 and logs them with the request id', async () => {
     const logger = fakeLogger();
     const secret = new Error('db password is hunter2');

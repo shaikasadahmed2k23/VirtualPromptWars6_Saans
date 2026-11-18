@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import type { GeoPlace } from '@saans/shared';
 
+import { GeocodingUnavailableError, UpstreamError } from '../lib/errors.js';
 import { fetchJson, type HttpClientOptions } from '../lib/fetch-json.js';
 
 import type { GeocodingProvider } from './geocoding-provider.js';
@@ -35,7 +36,8 @@ export class OpenMeteoGeocodingProvider implements GeocodingProvider {
    * Looks up to five places matching `query`.
    * @param query - Place name.
    * @returns Matches, best first; empty when nothing matches.
-   * @throws {UpstreamError} On timeout, network failure, bad status or an unexpected body.
+   * @throws {GeocodingUnavailableError} On timeout, network failure, bad status or an unexpected
+   *   body; the underlying failure is kept as its `cause` for the logs.
    */
   async search(query: string): Promise<readonly GeoPlace[]> {
     const url = new URL(GEOCODING_URL);
@@ -45,7 +47,14 @@ export class OpenMeteoGeocodingProvider implements GeocodingProvider {
       language: 'en',
       format: 'json',
     }).toString();
-    const { results } = await fetchJson(url, responseSchema, { ...this.http, service: SERVICE });
+    const { results } = await fetchJson(url, responseSchema, {
+      ...this.http,
+      service: SERVICE,
+    }).catch((error: unknown) => {
+      throw error instanceof UpstreamError
+        ? new GeocodingUnavailableError('City search failed', { cause: error })
+        : error;
+    });
     return results.map((place) => ({
       id: place.id,
       name: place.name,

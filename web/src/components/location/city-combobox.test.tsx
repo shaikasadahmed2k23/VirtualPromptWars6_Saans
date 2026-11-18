@@ -69,4 +69,24 @@ describe('CityCombobox', () => {
     await user.type(input, 'Delhi');
     expect(await screen.findByText(/Too many requests/)).toBeInTheDocument();
   });
+
+  it('says the city search failed, not that the air service is down', async () => {
+    const api = fakeApi({
+      geocode: vi.fn(() => Promise.reject(new ApiError('GEOCODING_UNAVAILABLE', '502'))),
+    });
+    const { user, input } = setup(api);
+    await user.type(input, 'Delhi');
+    const message = await screen.findByText(/City search failed/);
+    expect(message).toHaveAttribute('role', 'status');
+    expect(screen.queryByText(/air-quality service/)).not.toBeInTheDocument();
+  });
+
+  it('says it in Hindi too', async () => {
+    const api = fakeApi({
+      geocode: vi.fn(() => Promise.reject(new ApiError('GEOCODING_UNAVAILABLE', '502'))),
+    });
+    renderWithProviders(<CityCombobox onSelect={vi.fn()} />, { api, language: 'hi' });
+    await userEvent.setup().type(screen.getByRole('combobox'), 'Delhi');
+    expect(await screen.findByText(/शहर की खोज विफल रही/)).toBeInTheDocument();
+  });
 });

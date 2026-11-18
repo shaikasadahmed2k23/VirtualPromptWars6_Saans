@@ -40,8 +40,12 @@ export function createAirRouter(air: AirService): Router {
       hourly: [...snapshot.hourly],
       bestWindow: snapshot.bestWindow,
       worstWindow: snapshot.worstWindow,
+      staleMinutes: snapshot.staleMinutes,
     };
-    res.set('Cache-Control', CACHE_CONTROL).json(body);
+    // Old data must not be pinned in the browser cache; let the next request try for live data.
+    res
+      .set('Cache-Control', snapshot.staleMinutes === null ? CACHE_CONTROL : 'no-store')
+      .json(body);
   });
   return router;
 }

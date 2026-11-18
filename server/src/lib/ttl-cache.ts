@@ -7,6 +7,17 @@ export interface TtlCacheOptions {
   /** Maximum entries kept; inserting beyond this evicts the oldest entry. */
   readonly maxEntries: number;
   readonly clock: Clock;
+  /**
+   * How long past expiry an entry is still kept for {@link TtlCache.getStale}; 0 (the default)
+   * drops entries as soon as they expire.
+   */
+  readonly staleGraceMs?: number;
+}
+
+/** A value read after its TTL, with how long ago it was stored. */
+export interface StaleEntry<V> {
+  readonly value: V;
+  readonly ageMs: number;
 }
 
 interface Entry<V> {
@@ -50,10 +61,31 @@ export class TtlCache<K, V> {
       return undefined;
     }
     if (entry.expiresAt <= this.options.clock.now()) {
-      this.entries.delete(key);
+      if (this.pastGrace(entry)) {
+        this.entries.delete(key);
+      }
       return undefined;
     }
     return entry.value;
+  }
+
+  /**
+   * Reads an entry even though its TTL has passed, for serving old data when a refresh fails.
+   * @param key - Cache key.
+   * @returns The value and its age, or undefined when missing or older than the grace period.
+   */
+  getStale(key: K): StaleEntry<V> | undefined {
+    const entry = this.entries.get(key);
+    if (entry === undefined || this.pastGrace(entry)) {
+      return undefined;
+    }
+    const storedAt = entry.expiresAt - this.options.ttlMs;
+    return { value: entry.value, ageMs: this.options.clock.now() - storedAt };
+  }
+
+  private pastGrace(entry: Entry<V>): boolean {
+    const grace = this.options.staleGraceMs ?? 0;
+    return entry.expiresAt + grace <= this.options.clock.now();
   }
 
   /**

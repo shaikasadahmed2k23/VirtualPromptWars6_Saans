@@ -34,6 +34,7 @@ export const EN = {
     PAYLOAD_TOO_LARGE: 'That request was too large. Shorten your notes and try again.',
     RATE_LIMITED: 'Too many requests. Please wait a minute and try again.',
     UPSTREAM_ERROR: 'The air-quality service is not responding. Please try again shortly.',
+    GEOCODING_UNAVAILABLE: 'City search failed. Please try again in a moment.',
     INTERNAL_ERROR: 'Something went wrong on our side. Please try again.',
     NETWORK_ERROR: 'You seem to be offline. Check your connection and try again.',
     BAD_RESPONSE: 'We received an unexpected reply. Please try again.',
@@ -67,6 +68,8 @@ export const EN = {
     pollutants: { pm25: 'PM2.5', pm10: 'PM10' },
     indicative: 'Indicative hourly value. The official NAQI is a 24-hour average.',
     asOf: (time: string): string => `Reading for ${time}`,
+    stale: (minutes: number): string =>
+      `Live air data is unavailable right now. Showing the last reading; it may be up to ${String(minutes)} min old.`,
   },
   forecast: {
     heading: 'Next 48 hours',

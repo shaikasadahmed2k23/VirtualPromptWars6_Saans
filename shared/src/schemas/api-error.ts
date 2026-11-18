@@ -11,6 +11,7 @@ export const apiErrorCodeSchema = z.enum([
   'PAYLOAD_TOO_LARGE',
   'RATE_LIMITED',
   'UPSTREAM_ERROR',
+  'GEOCODING_UNAVAILABLE',
   'INTERNAL_ERROR',
 ]);
 

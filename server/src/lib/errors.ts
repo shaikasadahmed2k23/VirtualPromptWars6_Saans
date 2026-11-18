@@ -61,5 +61,10 @@ export class RateLimitError extends AppError {
 /** A third-party service failed, timed out or returned something unusable (502). */
 export class UpstreamError extends AppError {
   readonly status = 502;
-  readonly code = 'UPSTREAM_ERROR';
+  readonly code: ApiErrorCode = 'UPSTREAM_ERROR';
+}
+
+/** The city-search service failed, so the user can still type coordinates or retry (502). */
+export class GeocodingUnavailableError extends UpstreamError {
+  override readonly code = 'GEOCODING_UNAVAILABLE';
 }
