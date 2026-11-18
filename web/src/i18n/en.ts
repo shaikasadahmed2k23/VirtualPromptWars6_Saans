@@ -1,13 +1,9 @@
-import type { NaqiCategory } from '@saans/shared';
+import { NAQI_ADVISORIES, NAQI_CATEGORY_NAMES, type NaqiCategory } from '@saans/shared';
 
-const categories: Record<NaqiCategory, string> = {
-  good: 'Good',
-  satisfactory: 'Satisfactory',
-  moderate: 'Moderate',
-  poor: 'Poor',
-  veryPoor: 'Very poor',
-  severe: 'Severe',
-};
+// Annotated rather than inferred, so the dictionary shape is "a string per category" and every
+// language can supply its own words.
+const categories: Readonly<Record<NaqiCategory, string>> = NAQI_CATEGORY_NAMES.en;
+const advisories: Readonly<Record<NaqiCategory, string>> = NAQI_ADVISORIES.en;
 
 /** English UI strings; also defines the shape every other language must match. */
 export const EN = {
@@ -18,16 +14,7 @@ export const EN = {
   footer:
     'Air quality data: Open-Meteo. NAQI values from hourly data are indicative, and every impact figure is an estimate. Saans is not medical advice.',
   categories,
-  // CPCB NAQI health statements.
-  advisories: {
-    good: 'Minimal impact.',
-    satisfactory: 'Minor breathing discomfort to sensitive people.',
-    moderate:
-      'Breathing discomfort to people with lung disease such as asthma, and to people with heart disease, children and older adults.',
-    poor: 'Breathing discomfort to most people on prolonged exposure.',
-    veryPoor: 'Respiratory illness on prolonged exposure.',
-    severe: 'Affects healthy people and seriously impacts those with existing diseases.',
-  } satisfies Record<NaqiCategory, string>,
+  advisories,
   errors: {
     VALIDATION_ERROR: 'Some details look wrong. Please check the form.',
     NOT_FOUND: 'We could not find that place. Try a nearby larger city.',

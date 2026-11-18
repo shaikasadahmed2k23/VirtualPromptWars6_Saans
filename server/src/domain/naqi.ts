@@ -1,5 +1,6 @@
 import {
   DISPLAY_DECIMALS,
+  NAQI_ADVISORIES,
   NAQI_BREAKPOINTS,
   NAQI_CATEGORIES,
   NAQI_INDEX_BANDS,
@@ -11,17 +12,6 @@ import {
 
 import { assertNonNegativeFinite } from './domain-error.js';
 import { roundTo } from './rounding.js';
-
-/** CPCB health statement for each NAQI category. */
-export const NAQI_ADVISORIES = {
-  good: 'Minimal impact.',
-  satisfactory: 'Minor breathing discomfort to sensitive people.',
-  moderate:
-    'Breathing discomfort to people with lung disease such as asthma, and to people with heart disease, children and older adults.',
-  poor: 'Breathing discomfort to most people on prolonged exposure.',
-  veryPoor: 'Respiratory illness on prolonged exposure.',
-  severe: 'Affects healthy people and seriously impacts those with existing diseases.',
-} as const satisfies Record<NaqiCategory, string>;
 
 /** Appended to every advisory: hourly readings are not the official 24-hour NAQI. */
 export const INDICATIVE_NOTE =
@@ -81,6 +71,7 @@ export function computeNaqi(concentrations: Concentrations): NaqiResult {
     value,
     category,
     dominantPollutant,
-    advisory: `${NAQI_ADVISORIES[category]} ${INDICATIVE_NOTE}`,
+    // The API's advisory is English; the web UI shows its own language from the same table.
+    advisory: `${NAQI_ADVISORIES.en[category]} ${INDICATIVE_NOTE}`,
   };
 }

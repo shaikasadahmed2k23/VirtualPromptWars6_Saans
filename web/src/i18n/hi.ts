@@ -1,3 +1,5 @@
+import { NAQI_ADVISORIES, NAQI_CATEGORY_NAMES } from '@saans/shared';
+
 import type { Messages } from './en.js';
 
 /** Hindi UI strings. */
@@ -8,22 +10,8 @@ export const HI: Messages = {
   language: { label: 'Switch language: English', short: 'English' },
   footer:
     'हवा का डेटा: Open-Meteo। घंटेवार डेटा से बने NAQI मान सांकेतिक हैं और हर असर का आँकड़ा एक अनुमान है। साँस चिकित्सीय सलाह नहीं है।',
-  categories: {
-    good: 'अच्छी',
-    satisfactory: 'संतोषजनक',
-    moderate: 'मध्यम',
-    poor: 'ख़राब',
-    veryPoor: 'बहुत ख़राब',
-    severe: 'गंभीर',
-  },
-  advisories: {
-    good: 'न्यूनतम असर।',
-    satisfactory: 'संवेदनशील लोगों को साँस लेने में हल्की तकलीफ़।',
-    moderate: 'दमा जैसी फेफड़ों की बीमारी वालों, दिल के मरीज़ों, बच्चों और बुज़ुर्गों को साँस लेने में तकलीफ़।',
-    poor: 'लंबे समय तक संपर्क में रहने पर ज़्यादातर लोगों को साँस लेने में तकलीफ़।',
-    veryPoor: 'लंबे समय तक संपर्क में रहने पर साँस की बीमारी।',
-    severe: 'स्वस्थ लोगों पर भी असर, और बीमार लोगों पर गंभीर असर।',
-  },
+  categories: NAQI_CATEGORY_NAMES.hi,
+  advisories: NAQI_ADVISORIES.hi,
   errors: {
     VALIDATION_ERROR: 'कुछ जानकारी सही नहीं लग रही। कृपया फ़ॉर्म जाँचें।',
     NOT_FOUND: 'यह जगह नहीं मिली। पास का कोई बड़ा शहर आज़माएँ।',

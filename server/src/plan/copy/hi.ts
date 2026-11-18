@@ -1,4 +1,4 @@
-import { OVERNIGHT_INDOOR_HOURS, startsNow } from '@saans/shared';
+import { NAQI_CATEGORY_NAMES, OVERNIGHT_INDOOR_HOURS, startsNow } from '@saans/shared';
 
 import { avoided, timeSpan, type PlanCopy } from './plan-copy.js';
 
@@ -26,14 +26,7 @@ export const HI_COPY: PlanCopy = {
     walk: 'पैदल',
     cycle: 'साइकिल',
   },
-  categoryNames: {
-    good: 'अच्छी',
-    satisfactory: 'संतोषजनक',
-    moderate: 'मध्यम',
-    poor: 'ख़राब',
-    veryPoor: 'बहुत ख़राब',
-    severe: 'गंभीर',
-  },
+  categoryNames: NAQI_CATEGORY_NAMES.hi,
   days: { today: 'आज', tomorrow: 'कल' },
   nowIsGood: 'अभी बाहर निकलने का अच्छा समय है।',
   summary: ({ aqi, bestWindow, location, when }) => {

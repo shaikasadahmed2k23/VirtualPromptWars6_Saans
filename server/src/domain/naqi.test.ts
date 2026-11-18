@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { NAQI_ADVISORIES } from '@saans/shared';
+
 import { DomainError } from './domain-error.js';
-import {
-  categoryForIndex,
-  computeNaqi,
-  INDICATIVE_NOTE,
-  NAQI_ADVISORIES,
-  subIndex,
-} from './naqi.js';
+import { categoryForIndex, computeNaqi, INDICATIVE_NOTE, subIndex } from './naqi.js';
 
 describe('subIndex', () => {
   // [concentration, expected sub-index] at each band's lo, hi and hi + 0.1.
@@ -121,7 +117,7 @@ describe('computeNaqi', () => {
 
   it('labels the advisory as indicative and uses the CPCB health statement', () => {
     const { advisory } = computeNaqi({ pm25: 300, pm10: 0 });
-    expect(advisory).toBe(`${NAQI_ADVISORIES.severe} ${INDICATIVE_NOTE}`);
+    expect(advisory).toBe(`${NAQI_ADVISORIES.en.severe} ${INDICATIVE_NOTE}`);
     expect(advisory).toMatch(/indicative/i);
   });
 
