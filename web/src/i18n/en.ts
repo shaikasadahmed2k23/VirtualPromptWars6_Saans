@@ -94,6 +94,7 @@ export const EN = {
     modes: {
       petrolCar: 'Car',
       twoWheeler: 'Two-wheeler',
+      autoRickshaw: 'Auto-rickshaw',
       bus: 'Bus',
       metro: 'Metro',
       walk: 'Walk',

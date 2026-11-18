@@ -86,15 +86,15 @@ describe('co2Saved', () => {
     toMode: 'metro',
   } as const;
 
-  it('matches a hand calculation: 10 km × 10 trips × (0.164 − 0.028) = 13.6 kg/week', () => {
-    expect(co2Saved(commute)).toBe(13.6);
+  it('matches a hand calculation with TERI factors: 100 km × (0.08773 − 0.02929) = 5.84 kg/week', () => {
+    expect(co2Saved(commute)).toBe(5.84);
   });
 
   it.each([
-    ['petrolCar', 'bus', 6.2],
-    ['petrolCar', 'cycle', 16.4],
-    ['twoWheeler', 'walk', 11.4],
-    ['bus', 'metro', 7.4],
+    ['petrolCar', 'cycle', 8.77],
+    ['twoWheeler', 'walk', 4.13],
+    ['autoRickshaw', 'metro', 3.48],
+    ['bus', 'metro', 0.02],
   ] as const)('%s → %s saves %d kg/week', (fromMode, toMode, expected) => {
     expect(co2Saved({ ...commute, fromMode, toMode })).toBe(expected);
   });

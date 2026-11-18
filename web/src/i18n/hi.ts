@@ -88,6 +88,7 @@ export const HI: Messages = {
     modes: {
       petrolCar: 'कार',
       twoWheeler: 'दोपहिया',
+      autoRickshaw: 'ऑटो-रिक्शा',
       bus: 'बस',
       metro: 'मेट्रो',
       walk: 'पैदल',

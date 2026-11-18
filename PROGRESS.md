@@ -68,7 +68,7 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
 **Decisions to double-check.**
 
 - **Impact figures.**
-  - CO₂ factors are UK DESNZ 2024, used as proxies because I wasn't confident of exact India-specific values. Swap them if you have a preferred Indian source.
+  - CO₂ factors are now TERI Delhi per-passenger figures (public-transport data is 2019-20, pre-COVID); metro uses TERI’s upper bound.
   - Commute exposure assumes 20 km/h door to door, plus the per-mode activity/shielding in `COMMUTE_EXPOSURE`.
   - "Close windows" treats an open window as outdoor air (factor 1.0).
 - **NAQI method:**

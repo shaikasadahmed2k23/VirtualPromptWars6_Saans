@@ -23,7 +23,12 @@ export interface ImpactInputs {
 }
 
 // Modes worth switching away from: the metro is cleaner for both CO2 and exposure.
-const SWITCHABLE_MODES: ReadonlySet<CommuteMode> = new Set(['petrolCar', 'twoWheeler', 'bus']);
+const SWITCHABLE_MODES: ReadonlySet<CommuteMode> = new Set([
+  'petrolCar',
+  'twoWheeler',
+  'autoRickshaw',
+  'bus',
+]);
 
 type Facts = KnownImpactFacts | null;
 

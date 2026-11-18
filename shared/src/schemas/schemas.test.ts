@@ -66,7 +66,7 @@ describe('userProfileSchema', () => {
     [
       'commute.mode',
       'rocket',
-      'commute mode must be one of: petrolCar, twoWheeler, bus, metro, walk, cycle',
+      'commute mode must be one of: petrolCar, twoWheeler, autoRickshaw, bus, metro, walk, cycle',
     ],
     ['commute.distanceKm', 201, 'distanceKm must be at most 200'],
     ['commute.distanceKm', '12', 'distanceKm must be a number'],

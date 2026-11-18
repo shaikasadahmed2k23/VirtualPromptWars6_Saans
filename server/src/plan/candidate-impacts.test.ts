@@ -32,13 +32,13 @@ describe('deriveImpacts', () => {
   });
 
   it('computes the metro switch for a car commuter: CO2 only, no exposure change', () => {
-    // 12 km × 2 trips × 3 days = 72 km/week × (0.164 − 0.028) kg = 9.79 kg; car and metro
+    // 12 km × 2 trips × 3 days = 72 km/week × (0.08773 − 0.02929) kg = 4.21 kg; car and metro
     // are both closed cabins, so exposure is unchanged.
     expect(find(inputs(), 'commute-metro')).toEqual({
       id: 'commute-metro',
       category: 'commute',
       exposureAvoided: { micrograms: 0, percent: 0 },
-      co2SavedKgPerWeek: 9.79,
+      co2SavedKgPerWeek: 4.21,
     });
   });
 
@@ -47,7 +47,7 @@ describe('deriveImpacts', () => {
     // 20 km/day at 20 km/h = 1 h: 150 × 1.0 × 1 × 1 = 150 µg vs 150 × 0.5 × 1 × 0.6 = 45 µg.
     expect(find(rider, 'commute-metro')).toMatchObject({
       exposureAvoided: { micrograms: 105, percent: 70 },
-      co2SavedKgPerWeek: 5.16,
+      co2SavedKgPerWeek: 0.72,
     });
     // N95: 150 µg vs 15 µg.
     expect(find(rider, 'commute-n95')?.exposureAvoided).toEqual({ micrograms: 135, percent: 90 });

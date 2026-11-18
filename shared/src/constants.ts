@@ -38,21 +38,36 @@ export const PROTECTION_FACTOR = {
 } as const satisfies Record<ProtectionLevel, number>;
 
 /** Commute modes a household can report or switch to. */
-export const COMMUTE_MODES = ['petrolCar', 'twoWheeler', 'bus', 'metro', 'walk', 'cycle'] as const;
+export const COMMUTE_MODES = [
+  'petrolCar',
+  'twoWheeler',
+  'autoRickshaw',
+  'bus',
+  'metro',
+  'walk',
+  'cycle',
+] as const;
 
 /** One of {@link COMMUTE_MODES}. */
 export type CommuteMode = (typeof COMMUTE_MODES)[number];
 
-/** Tailpipe CO2e in kg per passenger-km for each commute mode (estimates). */
+/**
+ * CO2 in kg per passenger-km for each commute mode (estimates). Source for every motorised
+ * mode: TERI, "Per passenger emission in Delhi – Different Modes"
+ * (teriin.org/sites/default/transport/Per_passenger_emission_in_Delhi_Different_Modes.pdf),
+ * g CO2/passenger-km ÷ 1000. TERI's public-transport data is for 2019-20, i.e. pre-COVID.
+ */
 export const CO2_KG_PER_PASSENGER_KM = {
-  // UK DESNZ GHG Conversion Factors 2024: average petrol car, single occupant.
-  petrolCar: 0.164,
-  // UK DESNZ GHG Conversion Factors 2024: average motorbike.
-  twoWheeler: 0.114,
-  // UK DESNZ GHG Conversion Factors 2024: average local bus, per passenger-km.
-  bus: 0.102,
-  // UK DESNZ GHG Conversion Factors 2024: London Underground (urban metro proxy), per passenger-km.
-  metro: 0.028,
+  // TERI: private car, weighted across fuels, 87.73 g/pkm.
+  petrolCar: 0.08773,
+  // TERI: two-wheeler, 41.29 g/pkm.
+  twoWheeler: 0.04129,
+  // TERI: CNG auto-rickshaw, 64.10 g/pkm.
+  autoRickshaw: 0.0641,
+  // TERI: bus, 29.48 g/pkm.
+  bus: 0.02948,
+  // TERI: metro, 29.29 g/pkm (TERI's upper bound, so savings from metro are conservative).
+  metro: 0.02929,
   // No direct emissions; lifecycle emissions excluded.
   walk: 0,
   // No direct emissions; lifecycle emissions excluded.
@@ -71,6 +86,8 @@ export const COMMUTE_EXPOSURE = {
   petrolCar: { activity: 'rest', protection: 'indoorClosed' },
   // Estimate: riding in open traffic air.
   twoWheeler: { activity: 'light', protection: 'none' },
+  // Estimate: seated, with open sides, in traffic air.
+  autoRickshaw: { activity: 'rest', protection: 'none' },
   // Estimate: Indian city buses usually run with windows open.
   bus: { activity: 'rest', protection: 'none' },
   // Estimate: closed, air-conditioned coaches.

@@ -126,7 +126,7 @@ describe('PlanService', () => {
     expect(metro).toMatchObject({
       title: 'Take the metro on office days',
       explanation: 'AI explains commute-metro.',
-      co2SavedKgPerWeek: 9.79,
+      co2SavedKgPerWeek: 4.21,
     });
     const context = ai.generate.mock.calls[0]?.[0];
     expect(context?.profile).not.toHaveProperty('location');

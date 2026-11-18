@@ -20,6 +20,7 @@ export const HI_COPY: PlanCopy = {
   modeNames: {
     petrolCar: 'कार',
     twoWheeler: 'दोपहिया',
+    autoRickshaw: 'ऑटो-रिक्शा',
     bus: 'बस',
     metro: 'मेट्रो',
     walk: 'पैदल',

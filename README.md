@@ -103,24 +103,27 @@ avoided   = max(0, dose_baseline − dose_alternative)      percent = avoided / 
 kg CO₂/week = one-way km × trips per week × max(0, factor_from − factor_to)
 ```
 
-| Mode                         | kg CO₂e per passenger-km | Source                                                           |
-| ---------------------------- | ------------------------ | ---------------------------------------------------------------- |
-| Petrol car (single occupant) | 0.164                    | UK DESNZ GHG Conversion Factors 2024                             |
-| Two-wheeler                  | 0.114                    | UK DESNZ 2024 (average motorbike)                                |
-| Bus                          | 0.102                    | UK DESNZ 2024 (average local bus)                                |
-| Metro                        | 0.028                    | UK DESNZ 2024 (London Underground, used as an urban-metro proxy) |
-| Walk / cycle                 | 0                        | No direct emissions; lifecycle excluded                          |
+| Mode                   | g CO₂ per passenger-km | Source                                                       |
+| ---------------------- | ---------------------- | ------------------------------------------------------------ |
+| Private car (weighted) | 87.73                  | TERI, "Per passenger emission in Delhi – Different Modes"    |
+| CNG auto-rickshaw      | 64.10                  | TERI (same table)                                            |
+| Two-wheeler            | 41.29                  | TERI (same table)                                            |
+| Bus                    | 29.48                  | TERI (same table)                                            |
+| Metro                  | 29.29                  | TERI upper bound, so savings from the metro are conservative |
+| Walk / cycle           | 0                      | No direct emissions; lifecycle excluded                      |
+
+TERI source: <https://teriin.org/sites/default/transport/Per_passenger_emission_in_Delhi_Different_Modes.pdf>. Note that its public-transport figures are for 2019-20 (pre-COVID).
 
 ### Recommendations and their assumptions
 
-| Recommendation                                   | Baseline → alternative                                    | Assumptions (labelled estimates)                                                                    |
-| ------------------------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Take the metro (car, two-wheeler, bus commuters) | each mode's exposure profile → closed metro coach         | 20 km/h door-to-door, 2 trips per office day; per-mode activity and shielding in `COMMUTE_EXPOSURE` |
-| N95 on the commute (open-air modes)              | no protection → N95                                       | as above                                                                                            |
-| Exercise in the best window                      | worst-window PM2.5 → best-window PM2.5, moderate activity | the household's stated minutes                                                                      |
-| Exercise indoors (every waking hour Severe)      | outdoors → closed room (HEPA if they own one)             | 24 h mean PM2.5                                                                                     |
-| Close windows at the peak                        | windows open → closed, at rest                            | worst window's length and mean PM2.5                                                                |
-| Run or get a HEPA purifier                       | closed room → closed room + HEPA                          | 8 h of sleep, 24 h mean PM2.5                                                                       |
+| Recommendation                                                  | Baseline → alternative                                    | Assumptions (labelled estimates)                                                                    |
+| --------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Take the metro (car, two-wheeler, auto-rickshaw, bus commuters) | each mode's exposure profile → closed metro coach         | 20 km/h door-to-door, 2 trips per office day; per-mode activity and shielding in `COMMUTE_EXPOSURE` |
+| N95 on the commute (open-air modes)                             | no protection → N95                                       | as above                                                                                            |
+| Exercise in the best window                                     | worst-window PM2.5 → best-window PM2.5, moderate activity | the household's stated minutes                                                                      |
+| Exercise indoors (every waking hour Severe)                     | outdoors → closed room (HEPA if they own one)             | 24 h mean PM2.5                                                                                     |
+| Close windows at the peak                                       | windows open → closed, at rest                            | worst window's length and mean PM2.5                                                                |
+| Run or get a HEPA purifier                                      | closed room → closed room + HEPA                          | 8 h of sleep, 24 h mean PM2.5                                                                       |
 
 Exposure figures are **per person**: per office day for commute items, per day for the rest.
 

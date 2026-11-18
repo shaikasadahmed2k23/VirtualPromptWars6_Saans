@@ -20,6 +20,7 @@ export const EN_COPY: PlanCopy = {
   modeNames: {
     petrolCar: 'car',
     twoWheeler: 'two-wheeler',
+    autoRickshaw: 'auto-rickshaw',
     bus: 'bus',
     metro: 'metro',
     walk: 'walking',
