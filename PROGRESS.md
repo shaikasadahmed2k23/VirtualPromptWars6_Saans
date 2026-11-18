@@ -11,3 +11,8 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
 
 - Done: `Clock`, `TtlCache` (TTL, max entries, evicts oldest write), `AppError` + Validation/NotFound/PayloadTooLarge/RateLimit/Upstream, central error middleware, JSON `/api` 404, pino-http request ids (new dep: needed for request-id logging).
 - Decisions: added `PAYLOAD_TOO_LARGE` (413) to the shared error codes; any 4xx `http-errors` from Express internals keeps its meaning (a missing asset is a JSON 404, not a 500); import/order no longer puts type imports in their own group; jest-dom matchers are now registered explicitly (the side-effect entry stopped working under Vitest 5).
+
+## 2.2 providers/ — Open-Meteo air quality + geocoding
+
+- Done: `AqiProvider`/`OpenMeteoAqiProvider` (pm2_5+pm10, 2 days, timezone=auto; nulls dropped as gaps) and `GeocodingProvider`/`OpenMeteoGeocodingProvider` (5 results), both behind caching decorators (15 min by coords rounded to 2 dp; 24 h by normalized query). `fetchJson` helper: AbortController timeout (5 s), and every failure becomes `UpstreamError`.
+- Decisions: caching is a decorator (`Cached*Provider`), not built into the HTTP class; the cache key's rounded coordinates are also the coordinates queried; the forecast carries `utcOffsetSeconds` so the plan can find the location's current hour; `GeoPlace` lives in `shared/` for the web combobox.

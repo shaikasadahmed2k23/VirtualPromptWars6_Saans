@@ -8,7 +8,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.ts'],
       // index.ts only wires real dependencies and calls listen(); everything it uses is tested.
-      exclude: ['src/**/*.test.ts', 'src/index.ts'],
+      exclude: ['src/**/*.test.ts', 'src/test/**', 'src/index.ts'],
       thresholds: {
         lines: 90,
         functions: 90,

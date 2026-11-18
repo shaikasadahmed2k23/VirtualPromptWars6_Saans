@@ -167,6 +167,19 @@ export const routineBlockSchema = z.strictObject({
   advice: boundedText('advice', INPUT_LIMITS.textMax),
 });
 
+/** One geocoding match for a city search. */
+export const geoPlaceSchema = z.strictObject({
+  id: z.number().int(),
+  name: boundedText('name', INPUT_LIMITS.titleMax),
+  region: z.string().max(INPUT_LIMITS.titleMax).nullable(),
+  country: z.string().max(INPUT_LIMITS.titleMax).nullable(),
+  latitude: boundedNumber('latitude', -INPUT_LIMITS.latitude, INPUT_LIMITS.latitude),
+  longitude: boundedNumber('longitude', -INPUT_LIMITS.longitude, INPUT_LIMITS.longitude),
+});
+
+/** Response of `GET /api/geocode`. */
+export const geocodeResponseSchema = z.strictObject({ results: z.array(geoPlaceSchema) });
+
 /** Body of `POST /api/plan`. */
 export const planRequestSchema = z.strictObject({ profile: userProfileSchema });
 
@@ -220,6 +233,10 @@ export type ExposureAvoided = z.infer<typeof exposureAvoidedSchema>;
 export type ImpactItem = z.infer<typeof impactItemSchema>;
 /** One block of the daily routine. */
 export type RoutineBlock = z.infer<typeof routineBlockSchema>;
+/** A geocoding match. */
+export type GeoPlace = z.infer<typeof geoPlaceSchema>;
+/** Response body of `GET /api/geocode`. */
+export type GeocodeResponse = z.infer<typeof geocodeResponseSchema>;
 /** Request body of `POST /api/plan`. */
 export type PlanRequest = z.infer<typeof planRequestSchema>;
 /** Response body of `POST /api/plan`. */
