@@ -55,6 +55,20 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
   - **Leaky dependencies:** `PlanService` no longer imports from the fallback _generator_; `explainImpact` moved to `plan/copy/`. The web `SelectedPlace` model moved from `components/` to `hooks/`, so hooks never import components.
 - Checked, no change needed: every export has JSDoc (lint-enforced), every function ≤ 40 lines, every file ≤ 200, every component < 120 lines, no TODOs, and the two `eslint-disable`s carry reasons.
 
+## 5.1 Incident: 502 on /api/geocode (2026-11-18)
+
+- **Symptom:** `GET /api/geocode?q=Delhi` returned 502 "Location search is unavailable" in about 450 ms. The log line showed `cause: {}`.
+- **Logging bug:** an `Error` serializes to `{}` in JSON, so the reason was thrown away. `describeFailure()` now logs name, message, code, status and the cause chain; each retry is logged too. Never logged: URLs (they carry the user's search or location), bodies, keys.
+- **What the message proves:** "is unavailable" is raised only when `fetch` itself rejects. A timeout reads "timed out", a bad status "responded with status N", a schema mismatch "returned an unexpected response". So it was a network-level failure (reset, DNS, TLS), not the zod schema.
+- **Schema ruled out:** the real providers were run against the live API for Delhi, Mumbai, Kurnool, Hoshiarpur and the air forecast, and all validated. `git diff 6b8bac5..HEAD -- server/src/providers` is empty; the only `shared/` changes since then are constants and the plan schema.
+- **Not reproducible afterwards:** after the fix deployed, 20/20 upstream-only lookups and `/api/air` succeeded from Render. One lookup (Hoshiarpur) failed right after the deploy and worked on the next request. The exact low-level error was never captured, so the cause is "intermittent network failure between Render and Open-Meteo", not proven rate limiting. If it recurs, the Render log now shows `Retrying upstream call` with the real `cause.code`.
+- **Hardening:**
+  - About 109 major Indian cities are bundled and searched first; Open-Meteo is asked only on a miss.
+  - Descriptive `User-Agent`.
+  - One retry with backoff plus jitter on a dropped connection, 429 or 5xx (not on timeouts or bad bodies).
+  - `/api/air` serves the last good forecast for up to 6 h past its 15-minute TTL, with `staleMinutes` in the response, `Cache-Control: no-store`, and a notice in the UI.
+  - A new `GEOCODING_UNAVAILABLE` code so the UI says "City search failed" (en + hi) rather than blaming the air-quality service.
+
 ## STATUS FOR ASAD
 
 **Done.** Phases 0–4. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented and pushed. `npm run check` is green: 46 shared + 287 server + 62 web tests. Coverage is 100 % on shared and server (domain held at 100 % by threshold) and 100 % lines / 98 % branches on web. CI has been green after every step.
