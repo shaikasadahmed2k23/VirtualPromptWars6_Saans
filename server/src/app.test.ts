@@ -8,14 +8,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { apiErrorSchema, healthResponseSchema } from '@saans/shared';
 
-import { createApp } from './app.js';
-import { createLogger } from './logger.js';
+import { createTestApp } from './test/test-app.js';
 
 const INDEX_HTML = '<!doctype html><title>Saans</title>';
 
 describe('createApp', () => {
   let webDistDir: string;
-  const app = (): Express => createApp({ webDistDir, logger: createLogger('silent') });
+  const app = (): Express => createTestApp({ webDistDir });
 
   beforeAll(async () => {
     // Dot-prefixed on purpose: the app must still serve files when installed under a dot-directory.

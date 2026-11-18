@@ -3,13 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { loadConfig } from './config.js';
 
 describe('loadConfig', () => {
-  it('applies defaults when variables are absent', () => {
+  it('applies defaults when variables are absent, with AI unconfigured', () => {
     expect(loadConfig({})).toEqual({
       port: 8080,
       host: '0.0.0.0',
       nodeEnv: 'development',
       logLevel: 'info',
       webDistDir: 'web/dist',
+      geminiApiKey: null,
+      geminiModel: null,
     });
   });
 
@@ -20,6 +22,8 @@ describe('loadConfig', () => {
       NODE_ENV: 'production',
       LOG_LEVEL: 'warn',
       WEB_DIST_DIR: '/app/web/dist',
+      GEMINI_API_KEY: ' test-key ',
+      GEMINI_MODEL: 'a-model',
     });
     expect(config).toEqual({
       port: 10000,
@@ -27,7 +31,15 @@ describe('loadConfig', () => {
       nodeEnv: 'production',
       logLevel: 'warn',
       webDistDir: '/app/web/dist',
+      geminiApiKey: 'test-key',
+      geminiModel: 'a-model',
     });
+  });
+
+  it('treats blank Gemini settings as not configured', () => {
+    const config = loadConfig({ GEMINI_API_KEY: '   ', GEMINI_MODEL: '' });
+    expect(config.geminiApiKey).toBeNull();
+    expect(config.geminiModel).toBeNull();
   });
 
   it.each([['abc'], ['0'], ['70000']])('rejects invalid PORT %s', (port) => {
