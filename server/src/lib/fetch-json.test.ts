@@ -111,6 +111,19 @@ describe('fetchJson resilience', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
+  it('waits on a real timer when no sleep is injected', async () => {
+    vi.useFakeTimers();
+    try {
+      const { sleep: _injected, ...options } = httpOptions(sequence(dropped, ok));
+      const pending = fetchJson(URL_UNDER_TEST, schema, { ...options, service: 'Test API' });
+      // random() is 0 here, so the delay is exactly the 300 ms base.
+      await vi.advanceTimersByTimeAsync(300);
+      await expect(pending).resolves.toEqual({ value: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('waits a jittered delay and logs why, without the URL', async () => {
     const warn = vi.fn();
     const sleep = vi.fn(() => Promise.resolve());
