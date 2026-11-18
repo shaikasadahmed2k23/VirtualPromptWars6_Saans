@@ -94,7 +94,7 @@ export const FORECAST_SAMPLES: HourlyAirSample[] = Array.from({ length: 48 }, (_
 
 // 2026-11-18 06:30 in India (UTC+05:30).
 export const NOW_MS = Date.UTC(2026, 10, 18, 1, 0);
-export const IST_OFFSET_SECONDS = 19_800;
+const IST_OFFSET_SECONDS = 19_800;
 
 // What an AqiProvider returns for Delhi: the 48-hour samples above in IST.
 export const forecastFixture = (
