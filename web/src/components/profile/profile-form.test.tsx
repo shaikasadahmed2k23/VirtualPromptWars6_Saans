@@ -36,15 +36,17 @@ describe('ProfileForm', () => {
     await user.click(screen.getByLabelText('We have an air purifier'));
     await user.type(screen.getByLabelText('Anything else? (optional)'), 'Grandma walks at dawn');
     await submit(user);
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        location: { kind: 'coords', ...PLACE },
-        commute: { mode: 'metro', distanceKm: 10 },
-        hasPurifier: true,
-        notes: 'Grandma walks at dawn',
-        language: 'en',
-      }),
-    );
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          location: { kind: 'coords', ...PLACE },
+          commute: { mode: 'metro', distanceKm: 10 },
+          hasPurifier: true,
+          notes: 'Grandma walks at dawn',
+          language: 'en',
+        }),
+      );
+    });
   });
 
   it('sends every choice the household makes', async () => {
@@ -54,6 +56,9 @@ describe('ProfileForm', () => {
     await user.selectOptions(screen.getByLabelText('Cooking fuel'), 'biomass');
     await user.click(screen.getByLabelText(/asthma, heart or lung problems/));
     await submit(user);
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalled();
+    });
     const profile = onSubmit.mock.calls[0]?.[0] as UserProfile | undefined;
     expect(profile?.work.location).toBe('home');
     expect(profile?.exercise.timing).toBe('none');
@@ -71,8 +76,8 @@ describe('ProfileForm', () => {
     await user.type(screen.getByLabelText('Work ends (hour, 1–24)'), '8');
     await user.clear(screen.getByLabelText('One-way distance (km)'));
     await submit(user);
+    const summary = await screen.findByRole('alert');
     expect(onSubmit).not.toHaveBeenCalled();
-    const summary = screen.getByRole('alert');
     expect(summary).toHaveTextContent('Please fix 3 fields below.');
     expect(adults).toHaveAttribute('aria-invalid', 'true');
     expect(adults).toHaveAccessibleDescription('Enter a whole number from 1 to 20.');
@@ -88,7 +93,7 @@ describe('ProfileForm', () => {
   it('asks for a location before anything else', async () => {
     const { onSubmit, user } = setup(null);
     await submit(user);
-    expect(screen.getByRole('alert')).toHaveTextContent('Choose a location above first.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Choose a location above first.');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -107,6 +112,8 @@ describe('ProfileForm', () => {
     await waitFor(() => {
       expect(minutes).toHaveAttribute('aria-invalid', 'false');
     });
-    expect(onSubmit).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
   });
 });
