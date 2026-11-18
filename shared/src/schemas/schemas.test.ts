@@ -152,6 +152,7 @@ describe('API envelopes', () => {
           title: 'Take the metro',
           explanation: 'Saves CO2.',
           exposureAvoided: { micrograms: 120, percent: 40 },
+          restHoursEquivalent: 2.4,
           co2SavedKgPerWeek: 13.6,
         },
       ],

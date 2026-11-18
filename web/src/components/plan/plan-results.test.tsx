@@ -22,6 +22,12 @@ describe('PlanResults', () => {
     expect(within(impacts).getAllByText('Estimate')).toHaveLength(2);
     expect(impacts).toHaveTextContent('105 µg less PM2.5 breathed (70% lower)');
     expect(impacts).toHaveTextContent('9.79 kg CO₂ saved per week');
+    // Shown for the impact that has the comparison; the one without it simply omits the line.
+    expect(
+      within(impacts).getAllByText(
+        '≈ the same as 2.1 hours of breathing today’s outdoor air at rest',
+      ),
+    ).toHaveLength(1);
     expect(screen.getByText(/not medical advice/)).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });

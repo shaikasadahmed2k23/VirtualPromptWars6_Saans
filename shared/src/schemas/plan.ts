@@ -25,6 +25,11 @@ export const impactFactsSchema = z.strictObject({
   id: boundedText('id', INPUT_LIMITS.idMax),
   category: oneOf('impact category', IMPACT_CATEGORIES),
   exposureAvoided: exposureAvoidedSchema.nullable(),
+  /**
+   * The avoided dose expressed as hours of resting breathing in today's current outdoor air
+   * (computed by us, so Gemini never has to). Null when there is no avoided dose to express.
+   */
+  restHoursEquivalent: z.number().nonnegative().nullable(),
   co2SavedKgPerWeek: z.number().nonnegative().nullable(),
 });
 

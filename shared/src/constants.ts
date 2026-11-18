@@ -248,6 +248,8 @@ export const PERCENT_SCALE = 100;
 export const DISPLAY_DECIMALS = {
   // Product choice: doses shown to 0.1 µg.
   doseMicrograms: 1,
+  // Product choice: hours of breathing shown to 0.1 h.
+  hours: 1,
   // Product choice: whole-number percentages.
   percent: 0,
   // Product choice: CO2 shown to 10 g.

@@ -149,6 +149,7 @@ export const HI: Messages = {
     estimate: 'अनुमान',
     exposure: (micrograms, percent) =>
       `साँस में ${String(micrograms)} µg कम PM2.5 (${String(percent)}% कम)`,
+    restHours: (hours) => `≈ आराम से बैठकर आज की बाहरी हवा में ${String(hours)} घंटे साँस लेने के बराबर`,
     co2: (kg) => `हर हफ़्ते ${String(kg)} किलो CO₂ की बचत`,
     disclaimer:
       'ये सामान्य, अनुमानित आँकड़े हैं, चिकित्सीय सलाह नहीं। अगर घर में किसी को कोई बीमारी है, तो डॉक्टर से पूछें कि उनके लिए क्या सुरक्षित है।',

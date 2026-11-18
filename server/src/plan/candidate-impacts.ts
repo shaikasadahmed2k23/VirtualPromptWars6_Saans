@@ -9,7 +9,12 @@ import {
   type UserProfile,
 } from '@saans/shared';
 
-import { co2Saved, exposureAvoided, type DoseInput } from '../domain/impact.js';
+import {
+  co2Saved,
+  exposureAvoided,
+  restHoursEquivalent,
+  type DoseInput,
+} from '../domain/impact.js';
 
 import type { ImpactId, KnownImpactFacts } from './plan-generator.js';
 
@@ -20,6 +25,8 @@ export interface ImpactInputs {
   readonly worstWindow: OutdoorWindow | null;
   /** Mean PM2.5 over the next 24 hours, µg/m³. */
   readonly dayMeanPm25: number;
+  /** PM2.5 right now, µg/m³; the yardstick for the "hours of breathing" comparison. */
+  readonly currentPm25: number;
 }
 
 // Modes worth switching away from: the metro is cleaner for both CO2 and exposure.
@@ -36,7 +43,16 @@ const facts = (
   id: ImpactId,
   category: KnownImpactFacts['category'],
   impact: Pick<KnownImpactFacts, 'exposureAvoided' | 'co2SavedKgPerWeek'>,
-): KnownImpactFacts => ({ id, category, ...impact });
+): KnownImpactFacts => ({ id, category, restHoursEquivalent: null, ...impact });
+
+// Fills the relatable "hours of resting breathing" figure once all avoided doses are known.
+const withRestHours = (item: KnownImpactFacts, currentPm25: number): KnownImpactFacts => ({
+  ...item,
+  restHoursEquivalent:
+    item.exposureAvoided === null
+      ? null
+      : restHoursEquivalent(item.exposureAvoided.micrograms, currentPm25),
+});
 
 const commutesToOffice = ({ work, commute }: UserProfile): boolean =>
   work.location !== 'home' && work.officeDaysPerWeek > 0 && commute.distanceKm > 0;
@@ -157,5 +173,7 @@ export function deriveImpacts(inputs: ImpactInputs): KnownImpactFacts[] {
     exercise(inputs),
     closeWindows(inputs),
     purifier(inputs),
-  ].filter((item): item is KnownImpactFacts => item !== null);
+  ]
+    .filter((item): item is KnownImpactFacts => item !== null)
+    .map((item) => withRestHours(item, inputs.currentPm25));
 }

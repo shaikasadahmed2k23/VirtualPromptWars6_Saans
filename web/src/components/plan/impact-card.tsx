@@ -16,7 +16,7 @@ export interface ImpactCardProps {
  */
 export function ImpactCard({ impact }: ImpactCardProps): JSX.Element {
   const { t } = useI18n();
-  const { exposureAvoided, co2SavedKgPerWeek } = impact;
+  const { exposureAvoided, co2SavedKgPerWeek, restHoursEquivalent } = impact;
   return (
     <div className="h-full rounded-xl border border-line p-4">
       <div className="flex items-start justify-between gap-2">
@@ -30,6 +30,11 @@ export function ImpactCard({ impact }: ImpactCardProps): JSX.Element {
           <div>
             <dt className="sr-only">PM2.5</dt>
             <dd>{t.plan.exposure(exposureAvoided.micrograms, exposureAvoided.percent)}</dd>
+            {restHoursEquivalent !== null && (
+              <dd className="text-sm font-normal text-muted">
+                {t.plan.restHours(restHoursEquivalent)}
+              </dd>
+            )}
           </div>
         )}
         {co2SavedKgPerWeek !== null && co2SavedKgPerWeek > 0 && (

@@ -55,6 +55,7 @@ export const context = (overrides: Partial<PlanContext> = {}): PlanContext => ({
       id: 'close-windows',
       category: 'indoor',
       exposureAvoided: { micrograms: 112, percent: 40 },
+      restHoursEquivalent: 1.4,
       co2SavedKgPerWeek: null,
     },
   ],

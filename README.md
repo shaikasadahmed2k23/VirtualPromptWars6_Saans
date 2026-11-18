@@ -127,6 +127,8 @@ TERI source: <https://teriin.org/sites/default/transport/Per_passenger_emission_
 
 Exposure figures are **per person**: per office day for commute items, per day for the rest.
 
+Each exposure figure also carries a relatable comparison, computed by us (never by Gemini): `restHoursEquivalent = avoided dose ÷ current PM2.5 ÷ 0.5 m³/h`, shown as "≈ the same as N hours of breathing today’s outdoor air at rest".
+
 ---
 
 ## NAQI method

@@ -16,6 +16,7 @@ const everyImpact: KnownImpactFacts[] = IMPACT_IDS.map((id) => ({
   id,
   category: 'indoor',
   exposureAvoided: { micrograms: 105, percent: 70 },
+  restHoursEquivalent: 2.1,
   co2SavedKgPerWeek: id === 'commute-metro' ? 9.79 : null,
 }));
 
@@ -46,7 +47,12 @@ describe('RuleBasedPlanGenerator', () => {
     });
 
     it('reads a missing figure as 0 rather than failing', () => {
-      const blank = { ...everyImpact[0], exposureAvoided: null, co2SavedKgPerWeek: null } as const;
+      const blank = {
+        ...everyImpact[0],
+        exposureAvoided: null,
+        restHoursEquivalent: null,
+        co2SavedKgPerWeek: null,
+      } as const;
       const { impactExplanations } = buildFallbackContent(
         context({ language, impacts: [{ ...blank, id: 'commute-metro', category: 'commute' }] }),
       );

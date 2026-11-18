@@ -156,6 +156,8 @@ export const EN = {
     estimate: 'Estimate',
     exposure: (micrograms: number, percent: number): string =>
       `${String(micrograms)} µg less PM2.5 breathed (${String(percent)}% lower)`,
+    restHours: (hours: number): string =>
+      `≈ the same as ${String(hours)} hours of breathing today’s outdoor air at rest`,
     co2: (kg: number): string => `${String(kg)} kg CO₂ saved per week`,
     disclaimer:
       'These are general, estimated figures, not medical advice. If anyone at home has a health condition, ask a doctor what is safe for them.',

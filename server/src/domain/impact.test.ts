@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { DomainError } from './domain-error.js';
-import { co2Saved, exposureAvoided, inhaledDose, type DoseInput } from './impact.js';
+import {
+  co2Saved,
+  exposureAvoided,
+  inhaledDose,
+  restHoursEquivalent,
+  type DoseInput,
+} from './impact.js';
 
 const outdoorRun: DoseInput = { pm25: 200, hours: 2, activity: 'moderate', protection: 'none' };
 
@@ -75,6 +81,29 @@ describe('exposureAvoided', () => {
 
   it('throws a DomainError when either scenario is invalid', () => {
     expect(() => exposureAvoided(outdoorRun, { ...outdoorRun, pm25: -1 })).toThrow(DomainError);
+  });
+});
+
+describe('restHoursEquivalent', () => {
+  it.each([
+    // dose ÷ concentration ÷ 0.5 m³/h
+    [112, 100, 2.2],
+    [210, 160, 2.6],
+    [50, 100, 1],
+    [0, 100, 0],
+  ])('%d µg at %d µg/m³ is %d hours of resting breathing', (micrograms, pm25, expected) => {
+    expect(restHoursEquivalent(micrograms, pm25)).toBe(expected);
+  });
+
+  it('is null when the air is clean right now', () => {
+    expect(restHoursEquivalent(100, 0)).toBeNull();
+  });
+
+  it.each([
+    [-1, 100],
+    [100, Number.NaN],
+  ])('throws a DomainError for invalid input (%d, %d)', (micrograms, pm25) => {
+    expect(() => restHoursEquivalent(micrograms, pm25)).toThrow(DomainError);
   });
 });
 

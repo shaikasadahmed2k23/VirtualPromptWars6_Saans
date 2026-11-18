@@ -66,6 +66,25 @@ export function exposureAvoided(baseline: DoseInput, alternative: DoseInput): Ex
 }
 
 /**
+ * Expresses an avoided dose as hours of breathing the current outdoor air at rest:
+ * dose ÷ current PM2.5 ÷ resting inhalation rate.
+ * @param avoidedMicrograms - Avoided PM2.5 dose in µg.
+ * @param currentPm25 - Current outdoor PM2.5 in µg/m³.
+ * @returns Hours, rounded for display; null when the air is clean (0 µg/m³), where the
+ *   comparison would be meaningless.
+ * @throws {DomainError} When either input is negative, NaN or infinite.
+ */
+export function restHoursEquivalent(avoidedMicrograms: number, currentPm25: number): number | null {
+  assertNonNegativeFinite('avoidedMicrograms', avoidedMicrograms);
+  assertNonNegativeFinite('currentPm25', currentPm25);
+  if (currentPm25 === 0) {
+    return null;
+  }
+  const hours = avoidedMicrograms / currentPm25 / INHALATION_RATE_M3_PER_HOUR.rest;
+  return roundTo(hours, DISPLAY_DECIMALS.hours);
+}
+
+/**
  * Weekly tailpipe CO2e saved by switching commute mode. Never negative; same mode saves 0.
  * @param input - Trip distance, weekly trip count and the two modes.
  * @returns kg CO2e saved per week, rounded for display.

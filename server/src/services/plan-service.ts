@@ -103,9 +103,9 @@ export class PlanService {
     place: Place,
     snapshot: LocatedSnapshot,
   ): Promise<PlanResponse> {
-    const { bestWindow, worstWindow, dayMeanPm25 } = snapshot;
+    const { bestWindow, worstWindow, dayMeanPm25, currentPm25 } = snapshot;
     const { time: _time, ...currentAqi } = snapshot.current;
-    const impacts = deriveImpacts({ profile, bestWindow, worstWindow, dayMeanPm25 });
+    const impacts = deriveImpacts({ profile, bestWindow, worstWindow, dayMeanPm25, currentPm25 });
     const context: PlanContext = {
       language: profile.language,
       locationLabel: place.label,

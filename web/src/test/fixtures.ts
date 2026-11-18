@@ -91,6 +91,7 @@ export const PLAN_RESPONSE: PlanResponse = {
       title: 'Take the metro on office days',
       explanation: 'Saves about 9.79 kg of CO2 a week.',
       exposureAvoided: { micrograms: 105, percent: 70 },
+      restHoursEquivalent: 2.1,
       co2SavedKgPerWeek: 9.79,
     },
     {
@@ -99,6 +100,7 @@ export const PLAN_RESPONSE: PlanResponse = {
       title: 'Keep windows shut at the peak',
       explanation: 'Cuts what each person breathes.',
       exposureAvoided: { micrograms: 112, percent: 40 },
+      restHoursEquivalent: null,
       co2SavedKgPerWeek: null,
     },
   ],

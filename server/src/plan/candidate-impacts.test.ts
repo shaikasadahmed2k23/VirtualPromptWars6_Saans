@@ -14,6 +14,7 @@ const inputs = (
   bestWindow: BEST,
   worstWindow: WORST,
   dayMeanPm25: 150,
+  currentPm25: 100,
   ...rest,
 });
 
@@ -38,8 +39,22 @@ describe('deriveImpacts', () => {
       id: 'commute-metro',
       category: 'commute',
       exposureAvoided: { micrograms: 0, percent: 0 },
+      restHoursEquivalent: 0,
       co2SavedKgPerWeek: 4.21,
     });
+  });
+
+  it('expresses each avoided dose as hours of resting breathing at the current PM2.5', () => {
+    // dose ÷ 100 µg/m³ ÷ 0.5 m³/h: 112 µg → 2.2 h, 210 µg → 4.2 h, 250 µg → 5 h.
+    const hours = (id: string): number | null | undefined =>
+      find(inputs(), id)?.restHoursEquivalent;
+    expect(hours('close-windows')).toBe(2.2);
+    expect(hours('purifier-buy')).toBe(4.2);
+    expect(hours('exercise-shift')).toBe(5);
+  });
+
+  it('has no hours comparison when the air is clean right now', () => {
+    expect(find(inputs({}, { currentPm25: 0 }), 'close-windows')?.restHoursEquivalent).toBeNull();
   });
 
   it('computes exposure and CO2 for a two-wheeler rider switching to metro, plus an N95 option', () => {
