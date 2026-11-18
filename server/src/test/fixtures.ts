@@ -2,6 +2,7 @@ import type { HourlyAirSample, NaqiResult, OutdoorWindow, UserProfile } from '@s
 
 import type { PlanContext } from '../plan/plan-generator.js';
 import { toPromptProfile } from '../plan/prompt.js';
+import type { AirQualityForecast } from '../providers/aqi-provider.js';
 
 // Shared, realistic test data: a Delhi family on a very poor winter day.
 
@@ -78,3 +79,13 @@ export const FORECAST_SAMPLES: HourlyAirSample[] = Array.from({ length: 48 }, (_
 // 2026-11-18 06:30 in India (UTC+05:30).
 export const NOW_MS = Date.UTC(2026, 10, 18, 1, 0);
 export const IST_OFFSET_SECONDS = 19_800;
+
+// What an AqiProvider returns for Delhi: the 48-hour samples above in IST.
+export const forecastFixture = (
+  overrides: Partial<AirQualityForecast> = {},
+): AirQualityForecast => ({
+  timezone: 'Asia/Kolkata',
+  utcOffsetSeconds: IST_OFFSET_SECONDS,
+  samples: FORECAST_SAMPLES,
+  ...overrides,
+});

@@ -1,8 +1,10 @@
+import type { Coordinates } from '@saans/shared';
+
 import { buildAirSnapshot, type AirSnapshot } from '../domain/air-snapshot.js';
 import { localTimeAt } from '../domain/local-time.js';
 import type { Clock } from '../lib/clock.js';
 import { UpstreamError } from '../lib/errors.js';
-import type { AqiProvider, Coordinates } from '../providers/aqi-provider.js';
+import type { AqiProvider } from '../providers/aqi-provider.js';
 
 /** An {@link AirSnapshot} plus the local context it was computed in. */
 export interface LocatedSnapshot extends AirSnapshot {

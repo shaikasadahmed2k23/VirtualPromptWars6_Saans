@@ -1,15 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { MS_PER_MINUTE } from '@saans/shared';
+
 import { UpstreamError } from '../lib/errors.js';
 import { TtlCache } from '../lib/ttl-cache.js';
 import { fetchHanging, fetchResolving, httpOptions, jsonResponse } from '../test/fake-fetch.js';
+import { forecastFixture } from '../test/fixtures.js';
 
 import {
   AQI_CACHE_MAX_ENTRIES,
   AQI_CACHE_TTL_MS,
   AQI_STALE_GRACE_MS,
   CachedAqiProvider,
-  roundCoordinates,
   type AirQualityForecast,
   type AqiProvider,
 } from './aqi-provider.js';
@@ -82,30 +84,34 @@ describe('OpenMeteoAqiProvider', () => {
   });
 });
 
-describe('CachedAqiProvider', () => {
-  const forecast: AirQualityForecast = {
-    timezone: 'Asia/Kolkata',
-    utcOffsetSeconds: 19_800,
-    samples: [],
+// A cached provider over a fake inner one, on a clock the test advances by hand.
+const cachedSetup = () => {
+  let now = 0;
+  const forecast = forecastFixture({ samples: [] });
+  const inner = {
+    getForecast: vi.fn<AqiProvider['getForecast']>(() => Promise.resolve(forecast)),
   };
+  const cache = new TtlCache<string, AirQualityForecast>({
+    ttlMs: AQI_CACHE_TTL_MS,
+    maxEntries: AQI_CACHE_MAX_ENTRIES,
+    clock: { now: () => now },
+    staleGraceMs: AQI_STALE_GRACE_MS,
+  });
+  const advance = (ms: number): void => {
+    now += ms;
+  };
+  const logger = { warn: vi.fn() };
+  return {
+    forecast,
+    inner,
+    logger,
+    advance,
+    provider: new CachedAqiProvider(inner, cache, logger),
+  };
+};
 
-  const setup = () => {
-    let now = 0;
-    const inner = {
-      getForecast: vi.fn<AqiProvider['getForecast']>(() => Promise.resolve(forecast)),
-    };
-    const cache = new TtlCache<string, AirQualityForecast>({
-      ttlMs: AQI_CACHE_TTL_MS,
-      maxEntries: AQI_CACHE_MAX_ENTRIES,
-      clock: { now: () => now },
-      staleGraceMs: AQI_STALE_GRACE_MS,
-    });
-    const advance = (ms: number): void => {
-      now += ms;
-    };
-    const logger = { warn: vi.fn() };
-    return { inner, logger, provider: new CachedAqiProvider(inner, cache, logger), advance };
-  };
+describe('CachedAqiProvider', () => {
+  const setup = cachedSetup;
 
   it('serves nearby points from one cached fetch made at the rounded location', async () => {
     const { inner, provider } = setup();
@@ -132,36 +138,13 @@ describe('CachedAqiProvider', () => {
 });
 
 describe('CachedAqiProvider when Open-Meteo fails', () => {
-  const forecast: AirQualityForecast = {
-    timezone: 'Asia/Kolkata',
-    utcOffsetSeconds: 19_800,
-    samples: [],
-  };
-  const MINUTE_MS = 60_000;
-
-  const setup = () => {
-    let now = 0;
-    const inner = {
-      getForecast: vi.fn<AqiProvider['getForecast']>(() => Promise.resolve(forecast)),
-    };
-    const cache = new TtlCache<string, AirQualityForecast>({
-      ttlMs: AQI_CACHE_TTL_MS,
-      maxEntries: AQI_CACHE_MAX_ENTRIES,
-      clock: { now: () => now },
-      staleGraceMs: AQI_STALE_GRACE_MS,
-    });
-    const logger = { warn: vi.fn() };
-    const advance = (ms: number): void => {
-      now += ms;
-    };
-    return { inner, logger, advance, provider: new CachedAqiProvider(inner, cache, logger) };
-  };
+  const setup = cachedSetup;
   const outage = new UpstreamError('Air quality service is unavailable');
 
   it('serves the last good forecast marked with its age, and logs why', async () => {
-    const { inner, logger, provider, advance } = setup();
+    const { forecast, inner, logger, provider, advance } = setup();
     await provider.getForecast(DELHI);
-    advance(AQI_CACHE_TTL_MS + 5 * MINUTE_MS);
+    advance(AQI_CACHE_TTL_MS + 5 * MS_PER_MINUTE);
     inner.getForecast.mockRejectedValueOnce(outage);
     await expect(provider.getForecast(DELHI)).resolves.toEqual({ ...forecast, staleMinutes: 20 });
     expect(logger.warn).toHaveBeenCalledWith(
@@ -171,7 +154,7 @@ describe('CachedAqiProvider when Open-Meteo fails', () => {
   });
 
   it('goes back to live data once the upstream recovers', async () => {
-    const { inner, provider, advance } = setup();
+    const { forecast, inner, provider, advance } = setup();
     await provider.getForecast(DELHI);
     advance(AQI_CACHE_TTL_MS);
     inner.getForecast.mockRejectedValueOnce(outage);
@@ -192,14 +175,5 @@ describe('CachedAqiProvider when Open-Meteo fails', () => {
     inner.getForecast.mockRejectedValueOnce(outage);
     await expect(provider.getForecast(DELHI)).rejects.toBe(outage);
     expect(logger.warn).not.toHaveBeenCalled();
-  });
-});
-
-describe('roundCoordinates', () => {
-  it('rounds to two decimals, including negatives', () => {
-    expect(roundCoordinates({ latitude: -33.8688, longitude: 151.2093 })).toEqual({
-      latitude: -33.87,
-      longitude: 151.21,
-    });
   });
 });

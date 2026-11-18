@@ -1,18 +1,25 @@
 import { z } from 'zod';
 
-import { COOKING_FUELS, DAYS_PER_WEEK, HOURS_PER_DAY, INPUT_LIMITS } from '../constants.js';
+import {
+  COOKING_FUELS,
+  DAYS_PER_WEEK,
+  EXERCISE_TIMINGS,
+  HOURS_PER_DAY,
+  INPUT_LIMITS,
+  WORK_LOCATIONS,
+} from '../constants.js';
 
 import {
   boundedInt,
   boundedNumber,
   boundedText,
+  cityNameSchema,
   commuteModeSchema,
   languageSchema,
+  latitudeSchema,
+  longitudeSchema,
   oneOf,
 } from './primitives.js';
-
-const latitudeSchema = boundedNumber('latitude', -INPUT_LIMITS.latitude, INPUT_LIMITS.latitude);
-const longitudeSchema = boundedNumber('longitude', -INPUT_LIMITS.longitude, INPUT_LIMITS.longitude);
 
 /** A validated WGS84 point, as sent by clients. */
 export const coordinatesSchema = z.strictObject({
@@ -24,17 +31,10 @@ export const coordinatesSchema = z.strictObject({
 export const locationSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('coords'),
-    latitude: latitudeSchema,
-    longitude: longitudeSchema,
+    ...coordinatesSchema.shape,
     label: boundedText('label', INPUT_LIMITS.titleMax).optional(),
   }),
-  z.strictObject({
-    kind: z.literal('city'),
-    name: boundedText('city', INPUT_LIMITS.cityNameMax).min(
-      INPUT_LIMITS.cityNameMin,
-      `city must be at least ${String(INPUT_LIMITS.cityNameMin)} characters`,
-    ),
-  }),
+  z.strictObject({ kind: z.literal('city'), name: cityNameSchema('city') }),
 ]);
 
 const membersMax = INPUT_LIMITS.householdMembersMax;
@@ -56,7 +56,7 @@ export const commuteSchema = z.strictObject({
 /** Where and when the main earner works. */
 export const workScheduleSchema = z
   .strictObject({
-    location: oneOf('work location', ['home', 'office', 'hybrid']),
+    location: oneOf('work location', WORK_LOCATIONS),
     startHour: boundedInt('startHour', 0, HOURS_PER_DAY - 1),
     endHour: boundedInt('endHour', 1, HOURS_PER_DAY),
     officeDaysPerWeek: boundedInt('officeDaysPerWeek', 0, DAYS_PER_WEEK),
@@ -68,7 +68,7 @@ export const workScheduleSchema = z
 
 /** Outdoor exercise habit. */
 export const exerciseSchema = z.strictObject({
-  timing: oneOf('exercise timing', ['none', 'morning', 'evening', 'flexible']),
+  timing: oneOf('exercise timing', EXERCISE_TIMINGS),
   minutesPerDay: boundedInt('minutesPerDay', 0, INPUT_LIMITS.exerciseMinutesMax),
 });
 
@@ -92,7 +92,5 @@ export const planRequestSchema = z.strictObject({ profile: userProfileSchema });
 export type UserProfile = z.infer<typeof userProfileSchema>;
 /** Profile location: coordinates or a city name. */
 export type Location = z.infer<typeof locationSchema>;
-/** A validated WGS84 point. */
-export type CoordinatesInput = z.infer<typeof coordinatesSchema>;
-/** Request body of `POST /api/plan`. */
-export type PlanRequest = z.infer<typeof planRequestSchema>;
+/** A point on the map in WGS84 degrees. */
+export type Coordinates = z.infer<typeof coordinatesSchema>;

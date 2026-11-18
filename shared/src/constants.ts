@@ -192,6 +192,18 @@ export const NAQI_BREAKPOINTS = {
   ],
 } as const satisfies Record<Pollutant, readonly ConcentrationBand[]>;
 
+/** Where the main earner works. */
+export const WORK_LOCATIONS = ['home', 'office', 'hybrid'] as const;
+
+/** One of {@link WORK_LOCATIONS}. */
+export type WorkLocation = (typeof WORK_LOCATIONS)[number];
+
+/** When the household usually exercises outdoors. */
+export const EXERCISE_TIMINGS = ['none', 'morning', 'evening', 'flexible'] as const;
+
+/** One of {@link EXERCISE_TIMINGS}. */
+export type ExerciseTiming = (typeof EXERCISE_TIMINGS)[number];
+
 /** Interface and plan languages. */
 export const LANGUAGES = ['en', 'hi'] as const;
 

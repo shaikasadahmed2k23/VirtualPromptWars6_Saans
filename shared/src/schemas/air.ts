@@ -1,18 +1,20 @@
 import { z } from 'zod';
 
-import { HOURS_PER_DAY, INPUT_LIMITS, NAQI_MAX_INDEX } from '../constants.js';
+import { HOURS_PER_DAY, INPUT_LIMITS, MINUTES_PER_HOUR, NAQI_MAX_INDEX } from '../constants.js';
 
 import {
   boundedInt,
   boundedNumber,
   boundedText,
+  latitudeSchema,
   localDateTimeSchema,
+  longitudeSchema,
   naqiCategorySchema,
   pollutantSchema,
 } from './primitives.js';
 
 // Server keeps old forecasts for at most 6 h past their TTL; allow a day so the contract has slack.
-const MAX_STALE_MINUTES = 24 * 60;
+const MAX_STALE_MINUTES = HOURS_PER_DAY * MINUTES_PER_HOUR;
 
 const concentration = (label: string): z.ZodNumber =>
   boundedNumber(label, 0, INPUT_LIMITS.concentrationMax);
@@ -69,8 +71,8 @@ export const geoPlaceSchema = z.strictObject({
   name: boundedText('name', INPUT_LIMITS.titleMax),
   region: z.string().max(INPUT_LIMITS.titleMax).nullable(),
   country: z.string().max(INPUT_LIMITS.titleMax).nullable(),
-  latitude: boundedNumber('latitude', -INPUT_LIMITS.latitude, INPUT_LIMITS.latitude),
-  longitude: boundedNumber('longitude', -INPUT_LIMITS.longitude, INPUT_LIMITS.longitude),
+  latitude: latitudeSchema,
+  longitude: longitudeSchema,
 });
 
 /** Response of `GET /api/geocode`. */

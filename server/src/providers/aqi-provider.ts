@@ -1,10 +1,9 @@
-import { MS_PER_HOUR, MS_PER_MINUTE, type HourlyAirSample } from '@saans/shared';
+import { MS_PER_HOUR, MS_PER_MINUTE, type Coordinates, type HourlyAirSample } from '@saans/shared';
 
+import { roundCoordinates } from '../domain/rounding.js';
 import { describeFailure } from '../lib/failure-detail.js';
 import type { WarnLogger } from '../lib/log.js';
 import type { TtlCache } from '../lib/ttl-cache.js';
-
-const COORDINATE_DECIMALS = 2;
 
 /** Open-Meteo updates its air-quality model hourly; 15 minutes keeps data fresh and calls rare. */
 export const AQI_CACHE_TTL_MS = 15 * MS_PER_MINUTE;
@@ -12,12 +11,6 @@ export const AQI_CACHE_TTL_MS = 15 * MS_PER_MINUTE;
 export const AQI_CACHE_MAX_ENTRIES = 500;
 /** How long past its TTL a forecast may still be shown when Open-Meteo is down (the hourly series spans 48 h). */
 export const AQI_STALE_GRACE_MS = 6 * MS_PER_HOUR;
-
-/** A point on the map in WGS84 degrees. */
-export interface Coordinates {
-  readonly latitude: number;
-  readonly longitude: number;
-}
 
 /** Hourly forecast for one location, in the location's local time. */
 export interface AirQualityForecast {
@@ -38,18 +31,6 @@ export interface AqiProvider {
    * @throws {UpstreamError} When the forecast cannot be obtained.
    */
   getForecast(coordinates: Coordinates): Promise<AirQualityForecast>;
-}
-
-/**
- * Rounds coordinates to 2 decimal places (~1 km), the granularity we cache and query at.
- * @param coordinates - Exact coordinates.
- * @returns Rounded coordinates.
- */
-export function roundCoordinates(coordinates: Coordinates): Coordinates {
-  return {
-    latitude: Number(coordinates.latitude.toFixed(COORDINATE_DECIMALS)),
-    longitude: Number(coordinates.longitude.toFixed(COORDINATE_DECIMALS)),
-  };
 }
 
 /**

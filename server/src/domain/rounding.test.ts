@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { roundTo } from './rounding.js';
+import { roundCoordinates, roundTo } from './rounding.js';
 
 describe('roundTo', () => {
   it.each([
@@ -11,5 +11,14 @@ describe('roundTo', () => {
     [0, 2, 0],
   ])('roundTo(%d, %d) = %d', (value, decimals, expected) => {
     expect(roundTo(value, decimals)).toBe(expected);
+  });
+});
+
+describe('roundCoordinates', () => {
+  it('rounds to two decimals, including negatives', () => {
+    expect(roundCoordinates({ latitude: -33.8688, longitude: 151.2093 })).toEqual({
+      latitude: -33.87,
+      longitude: 151.21,
+    });
   });
 });

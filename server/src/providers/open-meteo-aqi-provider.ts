@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { localDateTimeSchema, type HourlyAirSample } from '@saans/shared';
+import { localDateTimeSchema, type Coordinates, type HourlyAirSample } from '@saans/shared';
 
 import { fetchJson, type HttpClientOptions } from '../lib/fetch-json.js';
 
-import type { AirQualityForecast, AqiProvider, Coordinates } from './aqi-provider.js';
+import type { AirQualityForecast, AqiProvider } from './aqi-provider.js';
 
 const AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 // Today plus tomorrow: enough for the 48-hour strip and for planning late in the day.

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { IMPACT_CATEGORIES, INPUT_LIMITS, PERCENT_SCALE, PLAN_SOURCES } from '../constants.js';
+import { RELATIVE_DAYS } from '../relative-day.js';
 
 import { naqiResultSchema, outdoorWindowSchema } from './air.js';
 import {
@@ -8,6 +9,8 @@ import {
   boundedText,
   clockTimeSchema,
   languageSchema,
+  latitudeSchema,
+  longitudeSchema,
   oneOf,
 } from './primitives.js';
 
@@ -49,7 +52,7 @@ export const routineBlockSchema = z.strictObject({
 
 /** A routine block placed on the calendar: which day (at the location) its next run falls on. */
 export const scheduledRoutineBlockSchema = routineBlockSchema.extend({
-  day: oneOf('day', ['today', 'tomorrow']),
+  day: oneOf('day', RELATIVE_DAYS),
 });
 
 /** A short, practical suggestion (indoor hack or sustainable alternative). */
@@ -71,8 +74,8 @@ export const planResponseSchema = planContentSchema.omit({ impactExplanations: t
   routine: z.array(scheduledRoutineBlockSchema).max(INPUT_LIMITS.routineBlocksMax),
   location: z.strictObject({
     label: title(),
-    latitude: z.number(),
-    longitude: z.number(),
+    latitude: latitudeSchema,
+    longitude: longitudeSchema,
   }),
   generatedAt: z.iso.datetime({ offset: true }),
   currentAqi: naqiResultSchema,

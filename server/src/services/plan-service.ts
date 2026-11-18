@@ -4,6 +4,7 @@ import {
   MS_PER_HOUR,
   formatPlaceLabel,
   startOfHour,
+  type Coordinates,
   type Location,
   type PlanContent,
   type PlanResponse,
@@ -11,6 +12,7 @@ import {
   type UserProfile,
 } from '@saans/shared';
 
+import { roundCoordinates } from '../domain/rounding.js';
 import { scheduleRoutine } from '../domain/routine-schedule.js';
 import type { Clock } from '../lib/clock.js';
 import { NotFoundError } from '../lib/errors.js';
@@ -22,7 +24,6 @@ import { PLAN_COPY } from '../plan/copy/copies.js';
 import { explainImpact } from '../plan/copy/explain-impact.js';
 import type { PlanContext, PlanGenerator } from '../plan/plan-generator.js';
 import { toPromptProfile } from '../plan/prompt.js';
-import { roundCoordinates, type Coordinates } from '../providers/aqi-provider.js';
 import type { GeocodingProvider } from '../providers/geocoding-provider.js';
 
 import type { AirService, LocatedSnapshot } from './air-service.js';

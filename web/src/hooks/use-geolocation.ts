@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import type { CoordinatesInput } from '@saans/shared';
+import type { Coordinates } from '@saans/shared';
 
 /** Why the browser could not provide a position. */
 export type GeolocationFailure = 'denied' | 'unavailable' | 'timeout' | 'unsupported';
@@ -9,7 +9,7 @@ export type GeolocationFailure = 'denied' | 'unavailable' | 'timeout' | 'unsuppo
 export type GeolocationState =
   | { readonly status: 'idle' }
   | { readonly status: 'locating' }
-  | { readonly status: 'success'; readonly coordinates: CoordinatesInput }
+  | { readonly status: 'success'; readonly coordinates: Coordinates }
   | { readonly status: 'error'; readonly reason: GeolocationFailure };
 
 // Coarse is enough for city-level air quality and is faster and kinder to privacy.

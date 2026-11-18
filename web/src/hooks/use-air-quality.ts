@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 
-import type { AirResponse, CoordinatesInput } from '@saans/shared';
+import type { AirResponse, Coordinates } from '@saans/shared';
 
 import { useApi } from '../api/api-context.js';
 
@@ -17,7 +17,7 @@ export interface AirQuality {
  * @param coordinates - Selected location, or null.
  * @returns The request state and a retry function.
  */
-export function useAirQuality(coordinates: CoordinatesInput | null): AirQuality {
+export function useAirQuality(coordinates: Coordinates | null): AirQuality {
   const api = useApi();
   const { state, run, reset } = useAsyncTask<AirResponse>();
   const latitude = coordinates?.latitude;

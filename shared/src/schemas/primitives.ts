@@ -1,12 +1,11 @@
 import { z } from 'zod';
 
 import {
-  ACTIVITY_LEVELS,
   COMMUTE_MODES,
+  INPUT_LIMITS,
   LANGUAGES,
   NAQI_CATEGORIES,
   POLLUTANTS,
-  PROTECTION_LEVELS,
 } from '../constants.js';
 
 /**
@@ -73,10 +72,30 @@ export const clockTimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'time must be HH:MM on a 24-hour clock');
 
-/** Schema for {@link ActivityLevel}. */
-export const activityLevelSchema = oneOf('activity', ACTIVITY_LEVELS);
-/** Schema for {@link ProtectionLevel}. */
-export const protectionLevelSchema = oneOf('protection', PROTECTION_LEVELS);
+/**
+ * A city name as typed by a user: trimmed, within the product's length limits.
+ * @param label - Field name used in messages (`city` in a profile, `q` in a search).
+ * @returns The zod schema.
+ */
+export function cityNameSchema(label: string): z.ZodString {
+  return boundedText(label, INPUT_LIMITS.cityNameMax).min(
+    INPUT_LIMITS.cityNameMin,
+    `${label} must be at least ${String(INPUT_LIMITS.cityNameMin)} characters`,
+  );
+}
+
+/** WGS84 latitude in degrees. */
+export const latitudeSchema = boundedNumber(
+  'latitude',
+  -INPUT_LIMITS.latitude,
+  INPUT_LIMITS.latitude,
+);
+/** WGS84 longitude in degrees. */
+export const longitudeSchema = boundedNumber(
+  'longitude',
+  -INPUT_LIMITS.longitude,
+  INPUT_LIMITS.longitude,
+);
 /** Schema for {@link CommuteMode}. */
 export const commuteModeSchema = oneOf('commute mode', COMMUTE_MODES);
 /** Schema for {@link Pollutant}. */

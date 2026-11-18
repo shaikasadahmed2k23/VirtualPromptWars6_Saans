@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type {
   AirResponse,
   ApiErrorCode,
-  CoordinatesInput,
+  Coordinates,
   GeoPlace,
   PlanResponse,
   UserProfile,
@@ -35,7 +35,7 @@ export class ApiError extends Error {
 
 /** Typed access to the Saans API. Every response is validated against the shared schemas. */
 export interface ApiClient {
-  getAir(coordinates: CoordinatesInput, signal?: AbortSignal): Promise<AirResponse>;
+  getAir(coordinates: Coordinates, signal?: AbortSignal): Promise<AirResponse>;
   geocode(query: string, signal?: AbortSignal): Promise<readonly GeoPlace[]>;
   createPlan(profile: UserProfile, signal?: AbortSignal): Promise<PlanResponse>;
 }

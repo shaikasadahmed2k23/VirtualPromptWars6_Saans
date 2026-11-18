@@ -5,7 +5,10 @@ import { localDate, startOfHour } from './local-time.js';
  * Which calendar day, at the location, an instant falls on relative to "now". Windows and routine
  * blocks only ever look 24 hours ahead, so two values are enough.
  */
-export type RelativeDay = 'today' | 'tomorrow';
+export const RELATIVE_DAYS = ['today', 'tomorrow'] as const;
+
+/** One of {@link RELATIVE_DAYS}. */
+export type RelativeDay = (typeof RELATIVE_DAYS)[number];
 
 // Calendar-day number of a local date-time; only differences between two of them are used.
 const dayNumber = (localTime: string): number =>
