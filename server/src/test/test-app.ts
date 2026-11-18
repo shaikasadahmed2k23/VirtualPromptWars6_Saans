@@ -1,4 +1,5 @@
 import type { Express } from 'express';
+import type { Logger } from 'pino';
 import { vi } from 'vitest';
 
 import type { GeoPlace, PlanResponse } from '@saans/shared';
@@ -37,6 +38,7 @@ export interface TestAppOptions {
   readonly aqi?: AqiProvider;
   readonly geocoder?: GeocodingProvider;
   readonly ai?: PlanGenerator | null;
+  readonly logger?: Logger;
 }
 
 export const fakeAqi = (): AqiProvider => ({
@@ -55,7 +57,7 @@ export const fakeGeocoder = (): GeocodingProvider => ({
 
 export const createTestApp = (options: TestAppOptions = {}): Express => {
   const clock = { now: () => NOW_MS };
-  const logger = createLogger('silent');
+  const logger = options.logger ?? createLogger('silent');
   const geocoder = options.geocoder ?? fakeGeocoder();
   const air = new AirService(options.aqi ?? fakeAqi(), clock);
   const plans = new PlanService({

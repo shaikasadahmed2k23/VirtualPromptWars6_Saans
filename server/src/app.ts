@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 import compression from 'compression';
 import express, { type Express, type Router } from 'express';
 import type { Logger } from 'pino';
-import { pinoHttp } from 'pino-http';
 
 import { createApiNotFoundHandler, createErrorHandler } from './middleware/error-handler.js';
+import { createRequestLogger } from './middleware/request-logging.js';
 import {
   DEFAULT_RATE_LIMITS,
   createRateLimiter,
@@ -61,7 +61,7 @@ export function createApp(deps: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', TRUSTED_PROXY_HOPS);
-  app.use(pinoHttp({ logger: deps.logger, genReqId: () => randomUUID() }));
+  app.use(createRequestLogger(deps.logger, randomUUID));
   app.use(createSecurityHeaders());
   app.use(compression());
   app.use('/api', createApiRouter(deps));
