@@ -14,6 +14,9 @@ const optionalSecret = z
   .optional()
   .transform((value) => (value === undefined || value === '' ? null : value));
 
+/** How hard a thinking-capable Gemini model reasons before answering; lower is faster. */
+export const GEMINI_THINKING_LEVELS = ['low', 'medium', 'high'] as const;
+
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(MAX_PORT).default(DEFAULT_PORT),
   HOST: z.string().min(1).default(DEFAULT_HOST),
@@ -22,6 +25,7 @@ const envSchema = z.object({
   WEB_DIST_DIR: z.string().min(1).default('web/dist'),
   GEMINI_API_KEY: optionalSecret,
   GEMINI_MODEL: optionalSecret,
+  GEMINI_THINKING_LEVEL: optionalSecret.pipe(z.enum(GEMINI_THINKING_LEVELS).nullable()),
 });
 
 /** Validated runtime configuration derived from environment variables. */
@@ -35,6 +39,8 @@ export interface AppConfig {
   readonly geminiApiKey: string | null;
   /** Gemini model id; always configured, never hardcoded. */
   readonly geminiModel: string | null;
+  /** Reasoning effort for models that think by default; null sends no setting (works for every model). */
+  readonly geminiThinkingLevel: (typeof GEMINI_THINKING_LEVELS)[number] | null;
 }
 
 /**
@@ -53,5 +59,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     webDistDir: parsed.WEB_DIST_DIR,
     geminiApiKey: parsed.GEMINI_API_KEY,
     geminiModel: parsed.GEMINI_MODEL,
+    geminiThinkingLevel: parsed.GEMINI_THINKING_LEVEL,
   };
 }

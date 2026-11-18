@@ -12,6 +12,7 @@ describe('loadConfig', () => {
       webDistDir: 'web/dist',
       geminiApiKey: null,
       geminiModel: null,
+      geminiThinkingLevel: null,
     });
   });
 
@@ -24,6 +25,7 @@ describe('loadConfig', () => {
       WEB_DIST_DIR: '/app/web/dist',
       GEMINI_API_KEY: ' test-key ',
       GEMINI_MODEL: 'a-model',
+      GEMINI_THINKING_LEVEL: ' low ',
     });
     expect(config).toEqual({
       port: 10000,
@@ -33,6 +35,7 @@ describe('loadConfig', () => {
       webDistDir: '/app/web/dist',
       geminiApiKey: 'test-key',
       geminiModel: 'a-model',
+      geminiThinkingLevel: 'low',
     });
   });
 
@@ -40,6 +43,11 @@ describe('loadConfig', () => {
     const config = loadConfig({ GEMINI_API_KEY: '   ', GEMINI_MODEL: '' });
     expect(config.geminiApiKey).toBeNull();
     expect(config.geminiModel).toBeNull();
+    expect(config.geminiThinkingLevel).toBeNull();
+  });
+
+  it('rejects an unknown thinking level', () => {
+    expect(() => loadConfig({ GEMINI_THINKING_LEVEL: 'extreme' })).toThrow();
   });
 
   it.each([['abc'], ['0'], ['70000']])('rejects invalid PORT %s', (port) => {

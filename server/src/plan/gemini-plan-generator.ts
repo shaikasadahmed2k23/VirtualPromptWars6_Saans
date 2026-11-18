@@ -25,8 +25,13 @@ export interface GenerateContentRequest {
     readonly responseJsonSchema: unknown;
     readonly temperature: number;
     readonly abortSignal: AbortSignal;
+    /** Present only when a thinking level is configured. */
+    readonly thinkingConfig?: { readonly thinkingLevel: ThinkingLevel };
   };
 }
+
+/** Reasoning effort requested from thinking-capable models. */
+export type ThinkingLevel = 'low' | 'medium' | 'high';
 
 /** The Gemini call, injected so tests never reach the network. */
 export type GenerateContentFn = (
@@ -39,6 +44,8 @@ export interface GeminiPlanGeneratorOptions {
   /** Model id from configuration (`GEMINI_MODEL`); never hardcoded. */
   readonly model: string;
   readonly timeoutMs?: number;
+  /** Lowers reasoning time on models that think by default; omit to send no setting. */
+  readonly thinkingLevel?: ThinkingLevel;
   /** Receives one warning per failed attempt (reason only; never the key, prompt or output). */
   readonly logger?: WarnLogger;
 }
@@ -102,6 +109,9 @@ export class GeminiPlanGenerator implements PlanGenerator {
           responseJsonSchema: GEMINI_RESPONSE_SCHEMA,
           temperature: TEMPERATURE,
           abortSignal: controller.signal,
+          ...(this.options.thinkingLevel === undefined
+            ? {}
+            : { thinkingConfig: { thinkingLevel: this.options.thinkingLevel } }),
         },
       });
       const response = await Promise.race([request, timedOut]);
