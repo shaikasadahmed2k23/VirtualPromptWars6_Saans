@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import {
-  userProfileSchema,
-  type CommuteMode,
-  type CookingFuel,
-  type Language,
-  type UserProfile,
-} from '@saans/shared';
+import type { CommuteMode, CookingFuel, Language, UserProfile } from '@saans/shared';
 
 import type { Messages } from '../i18n/en.js';
 
@@ -101,17 +95,19 @@ export type ProfileValidation =
   | { readonly ok: false; readonly errors: FieldErrors };
 
 /**
- * Validates form values with the same schema the server uses.
+ * Validates form values with the same schema the server uses. The schema loads on first use so
+ * it stays out of the initial bundle.
  * @param values - Raw form values.
  * @param place - Selected location.
  * @param language - Language the plan should be written in.
  * @returns The profile, or per-field error keys.
  */
-export function validateProfile(
+export async function validateProfile(
   values: ProfileFormValues,
   place: SelectedPlace,
   language: Language,
-): ProfileValidation {
+): Promise<ProfileValidation> {
+  const { userProfileSchema } = await import('../api/schemas.js');
   const result = userProfileSchema.safeParse(toProfileInput(values, place, language));
   if (result.success) {
     return { ok: true, profile: result.data };
@@ -128,7 +124,7 @@ export interface ProfileForm {
   readonly values: ProfileFormValues;
   readonly errors: FieldErrors;
   readonly update: <K extends FieldName>(name: K, value: ProfileFormValues[K]) => void;
-  readonly validate: (place: SelectedPlace, language: Language) => UserProfile | null;
+  readonly validate: (place: SelectedPlace, language: Language) => Promise<UserProfile | null>;
 }
 
 /**
@@ -144,8 +140,8 @@ export function useProfileForm(): ProfileForm {
   }, []);
 
   const validate = useCallback(
-    (place: SelectedPlace, language: Language): UserProfile | null => {
-      const result = validateProfile(values, place, language);
+    async (place: SelectedPlace, language: Language): Promise<UserProfile | null> => {
+      const result = await validateProfile(values, place, language);
       setErrors(result.ok ? {} : result.errors);
       return result.ok ? result.profile : null;
     },

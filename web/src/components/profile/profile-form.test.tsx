@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -98,11 +98,15 @@ describe('ProfileForm', () => {
     await user.clear(minutes);
     await user.type(minutes, '999');
     await submit(user);
-    expect(minutes).toHaveAttribute('aria-invalid', 'true');
+    await waitFor(() => {
+      expect(minutes).toHaveAttribute('aria-invalid', 'true');
+    });
     await user.clear(minutes);
     await user.type(minutes, '45');
     await submit(user);
-    expect(minutes).toHaveAttribute('aria-invalid', 'false');
+    await waitFor(() => {
+      expect(minutes).toHaveAttribute('aria-invalid', 'false');
+    });
     expect(onSubmit).toHaveBeenCalledOnce();
   });
 });

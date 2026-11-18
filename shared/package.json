@@ -4,6 +4,7 @@
   "private": true,
   "description": "Zod schemas, inferred types and constants shared by server and web.",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.ts"
   },

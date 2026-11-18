@@ -33,10 +33,10 @@ export function ProfileForm({ place, submitting, onSubmit }: ProfileFormProps): 
   const [needsLocation, setNeedsLocation] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     setNeedsLocation(place === null);
-    const profile = place === null ? null : form.validate(place, language);
+    const profile = place === null ? null : await form.validate(place, language);
     if (profile === null) {
       requestAnimationFrame(() => summaryRef.current?.focus());
       return;
@@ -47,7 +47,7 @@ export function ProfileForm({ place, submitting, onSubmit }: ProfileFormProps): 
   return (
     <SectionCard id="profile" title={t.profile.heading}>
       <p className="mb-4 text-muted">{t.profile.intro}</p>
-      <form noValidate onSubmit={handleSubmit} className="space-y-5">
+      <form noValidate onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
         <ErrorSummary summaryRef={summaryRef} errors={form.errors} needsLocation={needsLocation} />
         <HouseholdFieldset form={form} />
         <CommuteFieldset form={form} />
