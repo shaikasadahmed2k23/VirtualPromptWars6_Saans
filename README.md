@@ -180,6 +180,7 @@ Saans implements the CPCB National Air Quality Index (2014) for PM2.5 and PM10 (
 - **Language**: the en/hi toggle updates `<html lang>`, and each plan carries its own `lang`.
 - **Motion and focus**: `prefers-reduced-motion` is respected, and focus is always visible.
 - **axe** runs on the whole page in the empty, loading, results and error states.
+- **Lighthouse**: the strict `Cross-Origin-Opener-Policy: same-origin` header makes headless Chrome fail with `NO_NAVSTART`; run it with `--chrome-flags="--headless=new --disable-features=CrossOriginOpenerPolicy,BrowsingContextGroupSwap --disable-site-isolation-trials"`. Reports (`lh-*.json`) are git-ignored.
 
 ## Testing
 

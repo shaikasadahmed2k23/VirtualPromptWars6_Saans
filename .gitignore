@@ -26,3 +26,6 @@ Thumbs.db
 
 # Per-developer Claude Code settings
 .claude/settings.local.json
+
+# Lighthouse reports
+lh-*.json
