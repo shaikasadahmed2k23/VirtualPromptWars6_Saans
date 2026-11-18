@@ -177,8 +177,11 @@ describe('API envelopes', () => {
       hourly: [hour],
       bestWindow: window,
       worstWindow: window,
+      staleMinutes: null,
     };
     expect(airResponseSchema.safeParse(response).success).toBe(true);
+    expect(airResponseSchema.safeParse({ ...response, staleMinutes: 25 }).success).toBe(true);
+    expect(airResponseSchema.safeParse({ ...response, staleMinutes: -1 }).success).toBe(false);
   });
 
   it('accepts geocoding results', () => {
