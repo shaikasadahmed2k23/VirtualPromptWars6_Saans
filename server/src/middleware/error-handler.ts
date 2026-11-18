@@ -4,6 +4,7 @@ import type { ErrorRequestHandler, RequestHandler } from 'express';
 import type { ApiError, ApiErrorCode } from '@saans/shared';
 
 import { AppError, NotFoundError, PayloadTooLargeError, ValidationError } from '../lib/errors.js';
+import type { ErrorLogger } from '../lib/log.js';
 
 const INTERNAL_STATUS = 500;
 const NOT_FOUND_STATUS = 404;
@@ -11,12 +12,6 @@ const PAYLOAD_TOO_LARGE_STATUS = 413;
 const CLIENT_ERROR_MIN = 400;
 const CLIENT_ERROR_MAX = 499;
 const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
-
-/** The two log methods the error handler needs; a pino `Logger` satisfies it. */
-export interface ErrorLogger {
-  error: (details: object, message: string) => void;
-  warn: (details: object, message: string) => void;
-}
 
 interface ClientHttpError {
   readonly status: number;

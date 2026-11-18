@@ -1,14 +1,10 @@
 import { GoogleGenAI } from '@google/genai';
 
 import type { AppConfig } from '../config.js';
+import type { WarnLogger } from '../lib/log.js';
 
 import { GeminiPlanGenerator } from './gemini-plan-generator.js';
 import type { PlanGenerator } from './plan-generator.js';
-
-/** The one log method the factory needs. */
-export interface StartupLogger {
-  warn: (details: object, message: string) => void;
-}
 
 /**
  * Builds the Gemini plan generator from configuration, or null (with a warning) when the key
@@ -19,7 +15,7 @@ export interface StartupLogger {
  */
 export function createAiGenerator(
   config: Pick<AppConfig, 'geminiApiKey' | 'geminiModel'>,
-  logger: StartupLogger,
+  logger: WarnLogger,
 ): PlanGenerator | null {
   const { geminiApiKey, geminiModel } = config;
   if (geminiApiKey === null || geminiModel === null) {

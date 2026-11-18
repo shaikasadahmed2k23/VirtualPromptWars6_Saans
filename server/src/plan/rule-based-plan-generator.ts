@@ -12,8 +12,9 @@ import {
 import { clockTime } from '../domain/local-time.js';
 
 import { PLAN_COPY } from './copy/copies.js';
-import type { AirTier, ImpactCopyContext, PlanCopy } from './copy/plan-copy.js';
-import type { KnownImpactFacts, PlanContext, PlanGenerator } from './plan-generator.js';
+import { explainImpact } from './copy/explain-impact.js';
+import type { AirTier, PlanCopy } from './copy/plan-copy.js';
+import type { PlanContext, PlanGenerator } from './plan-generator.js';
 
 const TIER_BY_CATEGORY: Readonly<Record<NaqiCategory, AirTier>> = {
   good: 'clean',
@@ -85,21 +86,6 @@ export function dayTier(context: PlanContext): AirTier {
   const peak = context.worstWindow?.category ?? now;
   const worse = NAQI_CATEGORIES.indexOf(peak) > NAQI_CATEGORIES.indexOf(now) ? peak : now;
   return TIER_BY_CATEGORY[worse];
-}
-
-/**
- * Deterministic explanation for one impact, used by the fallback and to fill any gap.
- * @param facts - Computed impact.
- * @param context - Plan context (language, windows, commute mode).
- * @returns The explanation in the context's language.
- */
-export function explainImpact(facts: KnownImpactFacts, context: PlanContext): string {
-  const copyContext: ImpactCopyContext = {
-    bestWindow: context.bestWindow,
-    worstWindow: context.worstWindow,
-    commuteMode: context.profile.commute.mode,
-  };
-  return PLAN_COPY[context.language].impacts[facts.id].explain(facts, copyContext);
 }
 
 /**

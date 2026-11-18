@@ -46,3 +46,43 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
 
 - Done: problem → solution, a table mapping each line of the brief to code, a mermaid architecture diagram, impact formulas with every constant and its source, the NAQI table and the Severe-band assumption, plus security, efficiency, accessibility, testing, setup, env vars and deployment (Render + cron-job.org keep-alive).
 - Decisions: written for the judge and new contributors, and every claim is checked against the code (timeouts, caches, limits, headers).
+
+## 4.2 Self-review (Code Quality)
+
+- Fixed:
+  - **Duplication:** `MS_PER_*`/`HOURS_PER_DAY` were redefined in 5 server files; they now live once in `shared/constants.ts`. The "Name, Region, Country" label was implemented on both server and web; it is now `formatPlaceLabel` in `shared/`.
+  - **Naming:** identical `WarnLogger`/`StartupLogger` ports are merged into `server/src/lib/log.ts`.
+  - **Leaky dependencies:** `PlanService` no longer imports from the fallback _generator_; `explainImpact` moved to `plan/copy/`. The web `SelectedPlace` model moved from `components/` to `hooks/`, so hooks never import components.
+- Checked, no change needed: every export has JSDoc (lint-enforced), every function ≤ 40 lines, every file ≤ 200, every component < 120 lines, no TODOs, and the two `eslint-disable`s carry reasons.
+
+## STATUS FOR ASAD
+
+**Done.** Phases 0–4. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented and pushed. `npm run check` is green: 46 shared + 287 server + 62 web tests. Coverage is 100 % on shared and server (domain held at 100 % by threshold) and 100 % lines / 98 % branches on web. CI has been green after every step.
+
+**Left.**
+
+1. **Live Gemini.** It has never been run against the real API (no key here). Every code path is tested with a mocked SDK, and the server falls back cleanly.
+2. **Render deploy** and the **cron-job.org** keep-alive are not set up; README → Deployment has the steps.
+3. **No visual check in a real browser yet.** The layout is tested with jsdom and axe only. A Lighthouse run (a11y target 100) is still to do.
+
+**Decisions to double-check.**
+
+- **Impact figures.**
+  - CO₂ factors are UK DESNZ 2024, used as proxies because I wasn't confident of exact India-specific values. Swap them if you have a preferred Indian source.
+  - Commute exposure assumes 20 km/h door to door, plus the per-mode activity/shielding in `COMMUTE_EXPOSURE`.
+  - "Close windows" treats an open window as outdoor air (factor 1.0).
+- **NAQI method:**
+  - The Severe band is interpolated up to PM2.5 380 / PM10 510 (an assumption, documented).
+  - Concentrations between integer breakpoints take the lower edge of the next band.
+- **Contracts and UI:**
+  - Response field is `source: "ai" | "fallback"`.
+  - Plans carry `language`.
+  - Routine times are `HH:MM`.
+  - UI advisories come from the dictionaries (the server's advisory is English-only).
+- **Security choices:**
+  - No CORS middleware; same origin only.
+  - The health route is outside the rate limiter.
+  - A missing `GEMINI_MODEL` disables AI, just like a missing key.
+- **Prompt privacy:** Gemini sees the household profile without exact coordinates, plus the location label.
+
+**Exact next step.** Create the Render Web Service (Docker) from this repo. Set `GEMINI_API_KEY` and `GEMINI_MODEL`, and use health-check path `/api/health`. Then generate one plan and confirm the badge reads "AI-personalised".

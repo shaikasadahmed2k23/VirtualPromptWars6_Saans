@@ -4,8 +4,8 @@
  * gives a gap-free number line for arithmetic; formatting back undoes it.
  */
 
-const MS_PER_HOUR = 3_600_000;
-const MS_PER_SECOND = 1000;
+import { MS_PER_HOUR, MS_PER_SECOND } from '@saans/shared';
+
 const LOCAL_MINUTE_LENGTH = 'YYYY-MM-DDTHH:MM'.length;
 const HOUR_PREFIX_LENGTH = 'YYYY-MM-DDTHH'.length;
 const CLOCK_TIME_START = 'YYYY-MM-DDT'.length;

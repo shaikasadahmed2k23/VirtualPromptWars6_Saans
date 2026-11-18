@@ -1,39 +1,34 @@
 import { createHash } from 'node:crypto';
 
-import type {
-  GeoPlace,
-  Location,
-  PlanContent,
-  PlanResponse,
-  PlanSource,
-  UserProfile,
+import {
+  MS_PER_HOUR,
+  formatPlaceLabel,
+  type Location,
+  type PlanContent,
+  type PlanResponse,
+  type PlanSource,
+  type UserProfile,
 } from '@saans/shared';
 
 import { startOfHour } from '../domain/local-time.js';
 import type { Clock } from '../lib/clock.js';
 import { NotFoundError } from '../lib/errors.js';
+import type { WarnLogger } from '../lib/log.js';
 import type { TtlCache } from '../lib/ttl-cache.js';
 import { deriveImpacts } from '../plan/candidate-impacts.js';
 import { PLAN_COPY } from '../plan/copy/copies.js';
+import { explainImpact } from '../plan/copy/explain-impact.js';
 import type { PlanContext, PlanGenerator } from '../plan/plan-generator.js';
 import { toPromptProfile } from '../plan/prompt.js';
-import { explainImpact } from '../plan/rule-based-plan-generator.js';
 import { roundCoordinates, type Coordinates } from '../providers/aqi-provider.js';
 import type { GeocodingProvider } from '../providers/geocoding-provider.js';
 
 import type { AirService, LocatedSnapshot } from './air-service.js';
 
-const MS_PER_HOUR = 3_600_000;
-
 /** Plans are keyed by the hour, so an hour is the longest a cached plan can be valid. */
 export const PLAN_CACHE_TTL_MS = MS_PER_HOUR;
 /** Upper bound on cached plans. */
 export const PLAN_CACHE_MAX_ENTRIES = 500;
-
-/** The one log method the service needs. */
-export interface WarnLogger {
-  warn: (details: object, message: string) => void;
-}
 
 /** Collaborators of {@link PlanService}, all injected. */
 export interface PlanServiceDeps {
@@ -53,9 +48,6 @@ interface Place extends Coordinates {
 
 const coordinatesLabel = ({ latitude, longitude }: Coordinates): string =>
   `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
-
-const placeLabel = ({ name, region, country }: GeoPlace): string =>
-  [...new Set([name, region, country].filter((part): part is string => part !== null))].join(', ');
 
 /**
  * Cache key for a plan: the normalized profile at its rounded location, for one local hour.
@@ -102,7 +94,7 @@ export class PlanService {
     if (match === undefined) {
       throw new NotFoundError('We could not find that city. Try a nearby larger city.');
     }
-    return { latitude: match.latitude, longitude: match.longitude, label: placeLabel(match) };
+    return { latitude: match.latitude, longitude: match.longitude, label: formatPlaceLabel(match) };
   }
 
   private async buildPlan(

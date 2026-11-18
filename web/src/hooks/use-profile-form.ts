@@ -8,8 +8,9 @@ import {
   type UserProfile,
 } from '@saans/shared';
 
-import type { SelectedPlace } from '../components/location/selected-place.js';
 import type { Messages } from '../i18n/en.js';
+
+import type { SelectedPlace } from './selected-place.js';
 
 /** Raw form values; numbers stay strings until validation so inputs can be edited freely. */
 export interface ProfileFormValues {

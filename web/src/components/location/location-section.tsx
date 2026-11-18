@@ -1,11 +1,11 @@
 import { useEffect, type JSX } from 'react';
 
+import type { SelectedPlace } from '../../hooks/selected-place.js';
 import { useGeolocation, type GeolocationState } from '../../hooks/use-geolocation.js';
 import { useI18n } from '../../i18n/i18n-context.js';
 import { SectionCard } from '../ui/section-card.js';
 
 import { CityCombobox } from './city-combobox.js';
-import type { SelectedPlace } from './selected-place.js';
 
 /** Props for {@link LocationSection}. */
 export interface LocationSectionProps {

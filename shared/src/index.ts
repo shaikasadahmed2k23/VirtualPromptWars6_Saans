@@ -1,5 +1,6 @@
 export * from './constants.js';
 export * from './health.js';
+export * from './place-label.js';
 export * from './schemas/air.js';
 export * from './schemas/api-error.js';
 export * from './schemas/plan.js';

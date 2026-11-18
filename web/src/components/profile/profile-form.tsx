@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent, type JSX, type Ref } from 'react';
 
 import type { UserProfile } from '@saans/shared';
 
+import type { SelectedPlace } from '../../hooks/selected-place.js';
 import {
   useProfileForm,
   type FieldErrorKey,
@@ -9,7 +10,6 @@ import {
   type FieldName,
 } from '../../hooks/use-profile-form.js';
 import { useI18n } from '../../i18n/i18n-context.js';
-import type { SelectedPlace } from '../location/selected-place.js';
 import { SectionCard } from '../ui/section-card.js';
 
 import { fieldId } from './fields.js';

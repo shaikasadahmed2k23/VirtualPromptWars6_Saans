@@ -1,9 +1,6 @@
-import type { GeoPlace } from '@saans/shared';
+import { HOURS_PER_DAY, MS_PER_HOUR, type GeoPlace } from '@saans/shared';
 
 import type { TtlCache } from '../lib/ttl-cache.js';
-
-const MS_PER_HOUR = 3_600_000;
-const HOURS_PER_DAY = 24;
 
 /** City coordinates practically never change; a day keeps repeat searches free. */
 export const GEOCODE_CACHE_TTL_MS = HOURS_PER_DAY * MS_PER_HOUR;

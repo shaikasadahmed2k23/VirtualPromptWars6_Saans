@@ -2,9 +2,9 @@ import type { RequestHandler } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 
-import { RateLimitError } from '../lib/errors.js';
+import { MS_PER_MINUTE } from '@saans/shared';
 
-const MS_PER_MINUTE = 60_000;
+import { RateLimitError } from '../lib/errors.js';
 
 /** Requests allowed per client IP per minute. */
 export interface RateLimits {

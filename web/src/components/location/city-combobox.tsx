@@ -2,12 +2,11 @@ import { useCallback, useId, useState, type JSX } from 'react';
 
 import type { GeoPlace } from '@saans/shared';
 
+import { toSelectedPlace, type SelectedPlace } from '../../hooks/selected-place.js';
 import type { AsyncState } from '../../hooks/use-async-task.js';
 import { useCitySearch } from '../../hooks/use-city-search.js';
 import { useCombobox, type Combobox } from '../../hooks/use-combobox.js';
 import { useI18n } from '../../i18n/i18n-context.js';
-
-import { toSelectedPlace, type SelectedPlace } from './selected-place.js';
 
 /** Props for {@link CityCombobox}. */
 export interface CityComboboxProps {

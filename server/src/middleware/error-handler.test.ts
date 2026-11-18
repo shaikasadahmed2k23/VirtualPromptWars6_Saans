@@ -5,8 +5,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { apiErrorSchema } from '@saans/shared';
 
 import { RateLimitError, UpstreamError } from '../lib/errors.js';
+import type { ErrorLogger } from '../lib/log.js';
 
-import { createApiNotFoundHandler, createErrorHandler, type ErrorLogger } from './error-handler.js';
+import { createApiNotFoundHandler, createErrorHandler } from './error-handler.js';
 
 const fakeLogger = () => ({
   error: vi.fn<ErrorLogger['error']>(),

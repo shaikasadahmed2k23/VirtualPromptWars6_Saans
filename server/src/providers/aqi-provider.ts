@@ -1,8 +1,7 @@
-import type { HourlyAirSample } from '@saans/shared';
+import { MS_PER_MINUTE, type HourlyAirSample } from '@saans/shared';
 
 import type { TtlCache } from '../lib/ttl-cache.js';
 
-const MS_PER_MINUTE = 60_000;
 const COORDINATE_DECIMALS = 2;
 
 /** Open-Meteo updates its air-quality model hourly; 15 minutes keeps data fresh and calls rare. */

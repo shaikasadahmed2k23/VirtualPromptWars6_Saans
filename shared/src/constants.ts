@@ -212,6 +212,15 @@ export const DEFAULT_WINDOW_HOURS = 2;
 /** Hours in a day; bounds hour-of-day inputs. */
 export const HOURS_PER_DAY = 24;
 
+/** Unit conversion: milliseconds in a second. */
+export const MS_PER_SECOND = 1000;
+
+/** Unit conversion: milliseconds in a minute. */
+export const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+
+/** Unit conversion: milliseconds in an hour. */
+export const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+
 /** Days in a week; bounds office-days input. */
 export const DAYS_PER_WEEK = 7;
 
