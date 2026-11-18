@@ -3,7 +3,6 @@ import path from 'node:path';
 import express, { Router } from 'express';
 
 const HASHED_ASSET_MAX_AGE = '1y';
-const API_PREFIX = /^\/api(\/|$)/;
 
 /**
  * Serves the built single-page web app. Vite emits content-hashed files under
@@ -24,11 +23,8 @@ export function createWebAppRouter(webDistDir: string): Router {
     }),
   );
   router.use(express.static(root, { index: false }));
-  router.get(/.*/, (req, res, next) => {
-    if (API_PREFIX.test(req.path)) {
-      next();
-      return;
-    }
+  // Mounted after the /api router, which answers every /api path itself.
+  router.get(/.*/, (_req, res) => {
     // Passing `root` keeps dot-directories in the install path from being rejected by `send`.
     res.set('Cache-Control', 'no-cache').sendFile('index.html', { root });
   });

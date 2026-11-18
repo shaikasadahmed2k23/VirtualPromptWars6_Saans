@@ -190,6 +190,7 @@ export const planResponseSchema = z.strictObject({
 export const apiErrorCodeSchema = z.enum([
   'VALIDATION_ERROR',
   'NOT_FOUND',
+  'PAYLOAD_TOO_LARGE',
   'RATE_LIMITED',
   'UPSTREAM_ERROR',
   'INTERNAL_ERROR',

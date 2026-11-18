@@ -51,7 +51,8 @@ export default tseslint.config(
       'import/order': [
         'error',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
+          // Type-only imports sort with their source's group instead of forming their own.
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
           pathGroups: [{ pattern: '@saans/**', group: 'internal' }],
           pathGroupsExcludedImportTypes: ['builtin'],
           'newlines-between': 'always',
