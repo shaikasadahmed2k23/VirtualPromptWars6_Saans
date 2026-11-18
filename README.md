@@ -166,7 +166,7 @@ Saans implements the CPCB National Air Quality Index (2014) for PM2.5 and PM10 (
 ## Efficiency
 
 - **TTL caches**: forecasts for 15 min, keyed by coordinates rounded to 2 dp; geocoding for 24 h, by normalized query; plans for 1 h, by SHA-256 of normalized profile + rounded location + local hour.
-- **Gemini** calls have an 8 s timeout and one retry, then fall back immediately.
+- **Gemini** calls each have an 8 s timeout, all inside a 20 s overall budget. A single `GEMINI_MODEL` gets one retry; a `GEMINI_MODELS` list is tried in order, once per model. When every attempt fails, the rule-based plan is served at once.
 - **Delivery**: gzip/brotli compression; content-hashed assets cached `immutable` for a year, while `index.html` is revalidated.
 - **Front end**: the results UI is code-split (lazy chunk). The 48-hour chart is plain CSS, with no chart library.
 
@@ -189,15 +189,15 @@ npm run check          # typecheck + lint (0 warnings) + format check + all test
 npm test               # tests only
 ```
 
-- **shared/** (zod contracts): 100 % coverage, enforced.
-- **server/** (100 % coverage; `domain/` is held at 100 % by threshold):
+- **shared/** (zod contracts, local-time and NAQI text helpers): 100 % coverage, enforced by threshold.
+- **server/** (100 % lines, 98.8 % branches; `domain/` is held at 100 % by threshold):
   - every NAQI boundary;
   - window edge cases: empty forecast, too short, gaps, all-Severe, ties;
   - impact maths against hand-calculated values;
   - providers against a mocked `fetch`: timeout, malformed JSON, nulls becoming gaps, cache hits;
   - Gemini mocked: valid output, invalid JSON, unknown impact id, timeout, retry;
   - supertest for every route: 400, 404, 413, 429, 502, fallback path, security headers.
-- **web/** (100 % lines, 98 % branches): hooks with a fake API, form validation, combobox keyboard pattern, results for both sources, language toggle, geolocation denied, and axe checks.
+- **web/** (100 % lines, 98.3 % branches): hooks with a fake API, form validation, combobox keyboard pattern, results for both sources, language toggle, geolocation denied, and axe checks.
 
 No test touches the network.
 
@@ -213,6 +213,8 @@ npm run dev:web             # UI on http://localhost:5173 (proxies /api)
 ```
 
 Production build: `npm run build && npm start` serves the built UI and the API from one process.
+
+Gemini setup check: `npm run gemini:check` lists the models your `GEMINI_API_KEY` can call and says whether `GEMINI_MODEL` is among them. It reads `.env` and never prints the key.
 
 ### Environment variables
 
@@ -238,7 +240,13 @@ Production build: `npm run build && npm start` serves the built UI and the API f
 ## Repository layout
 
 ```
-shared/   zod schemas (profile, air, plan, errors), sourced constants
+shared/   zod schemas (profile, air, plan, errors), sourced constants, local-time and NAQI text helpers
 server/   domain/ (pure) · providers/ · plan/ · services/ · routes/ · middleware/ · lib/
 web/      api/ · hooks/ · i18n/ (en, hi) · components/ · naqi/
+docs/     PROGRESS.md (build log and decisions) · REVIEW.md (code-quality review)
+scripts/  check-gemini.mjs (npm run gemini:check)
 ```
+
+## License and security
+
+MIT, see [LICENSE](LICENSE). To report a vulnerability, see [SECURITY.md](SECURITY.md).

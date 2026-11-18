@@ -80,15 +80,34 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
 - **Best Practices 96.** zod 4 probes `new Function` for its JIT; strict CSP reports that as an eval violation. `config({ jitless: true })` runs before any schema is built; no `unsafe-inline` was added.
 - **Speed.** zod and the schemas (about 86 kB) now load by dynamic import on first request or submit. Initial JavaScript fell from 281.6 kB (87.3 kB gzip) to 197 kB (64 kB gzip); local mobile Performance went from 82 to 91 and total blocking time from 760 ms to 370 ms. Not pursued by decision: swapping React, going under 150 kB, lazy-loading the Hindi dictionary.
 
+## 5.3 Code-quality review (2026-11-18)
+
+- **Review:** [REVIEW.md](REVIEW.md) ranks every finding High/Medium/Low with file:line and a fix, checked against the code rather than this log.
+- **Fixed, High:**
+  - The local date-time format was parsed in seven places; it is now `shared/local-time.ts`.
+  - The CPCB advisories and category names were copied between server and web; they are now `shared/naqi-text.ts`.
+  - The en/hi copy files each carried plan rules; `summarize()` and `metroBenefits()` now own them, and the output is byte-identical across 16 golden scenarios.
+- **Fixed, Medium:**
+  - All production `as` casts are gone.
+  - One definition each for coordinates, city name, thinking level and enum tuples.
+  - Failure logging is shared, and dead exports are removed.
+  - One test harness (`createTestServices`, `forecastFixture`).
+  - The docs below now match the code.
+- **Repo:**
+  - LICENSE (MIT) and SECURITY.md added.
+  - PROGRESS.md and REVIEW.md moved into `docs/`.
+  - `scripts/check-gemini.mjs` is now `npm run gemini:check`.
+- **Left by decision:** the fallback's "commutes" test differs from the impact engine's (REVIEW L7). Aligning them changes which tips appear, so it is outside a no-behaviour-change pass.
+
 ## STATUS FOR ASAD
 
-**Done.** Phases 0–4. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented and pushed. `npm run check` is green: 46 shared + 287 server + 62 web tests. Coverage is 100 % on shared and server (domain held at 100 % by threshold) and 100 % lines / 98 % branches on web. CI has been green after every step.
+**Done.** Phases 0–5. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented, deployed on Render and pushed. Live Gemini plans were checked on three profiles (§5.2). `npm run check` is green: 69 shared + 388 server + 80 web tests. Coverage is 100 % on shared, 100 % lines / 98.8 % branches on server (domain held at 100 % by threshold), and 100 % lines / 98.3 % branches on web.
 
 **Left.**
 
-1. **Live Gemini.** It has never been run against the real API (no key here). Every code path is tested with a mocked SDK, and the server falls back cleanly.
-2. **Render deploy** and the **cron-job.org** keep-alive are not set up; README → Deployment has the steps.
-3. **No visual check in a real browser yet.** The layout is tested with jsdom and axe only. A Lighthouse run (a11y target 100) is still to do.
+1. **cron-job.org keep-alive:** not verifiable from the repo; confirm the job exists and pings `/api/health`.
+2. **Lighthouse accessibility score:** Performance (91) and Best Practices were measured in §5.2; an accessibility run (target 100) has not been recorded.
+3. **REVIEW L7:** align the fallback's commute rule with `commutesToOffice` (behaviour change; needs a decision).
 
 **Decisions to double-check.**
 
@@ -103,11 +122,11 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
   - Response field is `source: "ai" | "fallback"`.
   - Plans carry `language`.
   - Routine times are `HH:MM`.
-  - UI advisories come from the dictionaries (the server's advisory is English-only).
+  - UI advisories come from `shared/naqi-text.ts` in the UI's language (the server's advisory is English-only).
 - **Security choices:**
   - No CORS middleware; same origin only.
   - The health route is outside the rate limiter.
   - A missing `GEMINI_MODEL` disables AI, just like a missing key.
 - **Prompt privacy:** Gemini sees the household profile without exact coordinates, plus the location label.
 
-**Exact next step.** Create the Render Web Service (Docker) from this repo. Set `GEMINI_API_KEY` and `GEMINI_MODEL`, and use health-check path `/api/health`. Then generate one plan and confirm the badge reads "AI-personalised".
+**Exact next step.** Decide REVIEW L7, then run Lighthouse accessibility against the Render URL and record the score here.
