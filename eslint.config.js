@@ -104,6 +104,10 @@ export default tseslint.config(
         },
       ],
       'jsdoc/require-throws': 'error',
+      // Destructured parameters (React props, option objects) are documented on their
+      // interface; repeating every field in @param would duplicate that documentation.
+      'jsdoc/require-param': ['error', { checkDestructured: false }],
+      'jsdoc/check-param-names': ['error', { checkDestructured: false }],
     },
   },
 
