@@ -92,6 +92,16 @@ function commuteMetro(profile: UserProfile, pm25: number): Facts {
   });
 }
 
+/**
+ * Whether a plan should suggest switching the commute to the metro. {@link deriveImpacts} keeps the
+ * switch only for an office commute (office days and distance above 0) from a switchable mode with a
+ * meaningful benefit, so the impact's presence is the single rule every plan path follows.
+ * @param impacts - The impacts derived for this household.
+ * @returns True when the metro switch is among them.
+ */
+export const suggestsMetroSwitch = (impacts: readonly KnownImpactFacts[]): boolean =>
+  impacts.some((item) => item.id === 'commute-metro');
+
 function commuteN95(profile: UserProfile, pm25: number): Facts {
   const baseline = commuteDose(profile, pm25, profile.commute.mode);
   if (!commutesToOffice(profile) || baseline.protection !== 'none') {

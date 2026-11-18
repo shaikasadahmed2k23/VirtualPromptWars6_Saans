@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { LANGUAGES, NAQI_CATEGORIES, planContentSchema } from '@saans/shared';
+import { LANGUAGES, NAQI_CATEGORIES, planContentSchema, type UserProfile } from '@saans/shared';
 
 import { BEST, CURRENT_AQI, PROFILE, WORST, context, window } from '../test/fixtures.js';
 
+import { deriveImpacts } from './candidate-impacts.js';
+import { PLAN_COPY } from './copy/copies.js';
 import { IMPACT_IDS, type KnownImpactFacts } from './plan-generator.js';
 import { toPromptProfile } from './prompt.js';
 import {
@@ -116,21 +118,52 @@ describe('RuleBasedPlanGenerator', () => {
     expect(routine.map((block) => block.start)).toEqual(['14:00', '22:00']);
   });
 
-  it('tailors alternatives to commute and cooking fuel', () => {
-    const carLpg = buildFallbackContent(context()).alternatives.map((tip) => tip.title);
-    expect(carLpg[0]).toBe('Take the metro or share a ride');
-    expect(carLpg).toContain('Cook with a lid on');
-    const homeBiomass = buildFallbackContent(
-      context({
-        profile: toPromptProfile({
-          ...PROFILE,
-          cookingFuel: 'biomass',
-          work: { ...PROFILE.work, location: 'home' },
-        }),
-      }),
+  it('tailors alternatives to cooking fuel', () => {
+    const lpg = buildFallbackContent(context()).alternatives.map((tip) => tip.title);
+    expect(lpg).toContain('Cook with a lid on');
+    const biomass = buildFallbackContent(
+      context({ profile: toPromptProfile({ ...PROFILE, cookingFuel: 'biomass' }) }),
     ).alternatives.map((tip) => tip.title);
-    expect(homeBiomass).not.toContain('Take the metro or share a ride');
-    expect(homeBiomass[0]).toBe('Switch to LPG or induction');
+    expect(biomass[0]).toBe('Switch to LPG or induction');
+  });
+
+  describe.each(LANGUAGES)('commute tip in %s follows the metro-switch impact', (language) => {
+    // Derives impacts with the real rule, so the offline plan and the impact cards cannot disagree.
+    const commuteTipShown = (changes: Partial<UserProfile>): boolean => {
+      const profile = { ...PROFILE, ...changes };
+      const impacts = deriveImpacts({
+        profile,
+        bestWindow: BEST,
+        worstWindow: WORST,
+        dayMeanPm25: 150,
+        currentPm25: 100,
+      });
+      const { alternatives } = buildFallbackContent(
+        context({ language, impacts, profile: toPromptProfile(profile) }),
+      );
+      return alternatives.includes(PLAN_COPY[language].alternatives.commute);
+    };
+    const work = (changes: Partial<UserProfile['work']>): Partial<UserProfile> => ({
+      work: { ...PROFILE.work, ...changes },
+    });
+
+    it('shows the tip to an office commuter whose switch has a real benefit', () => {
+      expect(commuteTipShown({})).toBe(true);
+      expect(commuteTipShown({ commute: { mode: 'bus', distanceKm: 10 } })).toBe(true);
+    });
+
+    it.each<[string, Partial<UserProfile>]>([
+      ['works from home', work({ location: 'home' })],
+      ['has no office days', work({ officeDaysPerWeek: 0 })],
+      ['lives next to the office', { commute: { mode: 'petrolCar', distanceKm: 0 } }],
+      ['already takes the metro', { commute: { mode: 'metro', distanceKm: 8 } }],
+      [
+        'would save less than the threshold',
+        { commute: { mode: 'petrolCar', distanceKm: 1 }, ...work({ officeDaysPerWeek: 1 }) },
+      ],
+    ])('hides the tip when the household %s', (_label, changes) => {
+      expect(commuteTipShown(changes)).toBe(false);
+    });
   });
 
   it.each([

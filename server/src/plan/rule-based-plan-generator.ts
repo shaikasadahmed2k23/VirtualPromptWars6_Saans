@@ -2,7 +2,6 @@ import {
   NAQI_CATEGORIES,
   WAKING_HOURS,
   clockTime,
-  type CommuteMode,
   type CookingFuel,
   type NaqiCategory,
   type OutdoorWindow,
@@ -11,6 +10,7 @@ import {
   type Tip,
 } from '@saans/shared';
 
+import { suggestsMetroSwitch } from './candidate-impacts.js';
 import { PLAN_COPY } from './copy/copies.js';
 import { explainImpact } from './copy/explain-impact.js';
 import { summarize, type AirTier, type PlanCopy } from './copy/plan-copy.js';
@@ -27,7 +27,6 @@ const TIER_BY_CATEGORY: Readonly<Record<NaqiCategory, AirTier>> = {
 };
 
 const DIRTY_FUELS: ReadonlySet<CookingFuel> = new Set(['biomass', 'kerosene', 'coal']);
-const LOW_CARBON_MODES: ReadonlySet<CommuteMode> = new Set(['metro', 'walk', 'cycle']);
 
 const pad = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
 
@@ -60,9 +59,9 @@ function buildRoutine({ bestWindow, worstWindow }: PlanContext, copy: PlanCopy):
   ];
 }
 
-function buildAlternatives({ profile }: PlanContext, copy: PlanCopy): Tip[] {
+function buildAlternatives({ profile, impacts }: PlanContext, copy: PlanCopy): Tip[] {
   const { alternatives } = copy;
-  const commutes = profile.work.location !== 'home' && !LOW_CARBON_MODES.has(profile.commute.mode);
+  const commutes = suggestsMetroSwitch(impacts);
   const cooking = DIRTY_FUELS.has(profile.cookingFuel)
     ? alternatives.dirtyFuel
     : alternatives.cleanCooking;

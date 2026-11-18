@@ -97,17 +97,16 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
   - LICENSE (MIT) and SECURITY.md added.
   - PROGRESS.md and REVIEW.md moved into `docs/`.
   - `scripts/check-gemini.mjs` is now `npm run gemini:check`.
-- **Left by decision:** the fallback's "commutes" test differs from the impact engine's (REVIEW L7). Aligning them changes which tips appear, so it is outside a no-behaviour-change pass.
+- **REVIEW L7 (decided afterwards):** the offline plan now shows the metro tip only when the impact engine keeps the metro switch (office days > 0, distance > 0, switchable mode, benefit above the threshold), via `suggestsMetroSwitch`. Households with 0 office days, 0 km or a negligible saving no longer see it.
 
 ## STATUS FOR ASAD
 
-**Done.** Phases 0–5. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented, deployed on Render and pushed. Live Gemini plans were checked on three profiles (§5.2). `npm run check` is green: 69 shared + 388 server + 80 web tests. Coverage is 100 % on shared, 100 % lines / 98.8 % branches on server (domain held at 100 % by threshold), and 100 % lines / 98.3 % branches on web.
+**Done.** Phases 0–5. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented, deployed on Render and pushed. Live Gemini plans were checked on three profiles (§5.2). `npm run check` is green: 69 shared + 400 server + 80 web tests. Coverage is 100 % on shared, 100 % lines / 98.8 % branches on server (domain held at 100 % by threshold), and 100 % lines / 98.3 % branches on web.
 
 **Left.**
 
 1. **cron-job.org keep-alive:** not verifiable from the repo; confirm the job exists and pings `/api/health`.
 2. **Lighthouse accessibility score:** Performance (91) and Best Practices were measured in §5.2; an accessibility run (target 100) has not been recorded.
-3. **REVIEW L7:** align the fallback's commute rule with `commutesToOffice` (behaviour change; needs a decision).
 
 **Decisions to double-check.**
 
@@ -129,4 +128,4 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
   - A missing `GEMINI_MODEL` disables AI, just like a missing key.
 - **Prompt privacy:** Gemini sees the household profile without exact coordinates, plus the location label.
 
-**Exact next step.** Decide REVIEW L7, then run Lighthouse accessibility against the Render URL and record the score here.
+**Exact next step.** Run Lighthouse accessibility against the Render URL and record the score here.
