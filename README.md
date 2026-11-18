@@ -1,5 +1,9 @@
 # Saans: breathe easier through smog season
 
+- **Live demo:** https://virtualpromptwars6-saans.onrender.com
+- **Demo video:** TBD
+- **LinkedIn post:** TBD
+
 Saans (साँस, "breath") is a GenAI assistant for families living through severe winter smog in Indian cities. Pick a location and describe your household. Saans then builds a plan for today:
 
 - a **low-exposure routine** timed to the hourly air-quality forecast,
