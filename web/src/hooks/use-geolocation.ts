@@ -12,6 +12,13 @@ export type GeolocationState =
   | { readonly status: 'success'; readonly coordinates: Coordinates }
   | { readonly status: 'error'; readonly reason: GeolocationFailure };
 
+/** What {@link useGeolocation} returns. */
+export interface GeolocationRequest {
+  readonly state: GeolocationState;
+  /** Asks the browser for the position (it may prompt the user). */
+  readonly locate: () => void;
+}
+
 // Coarse is enough for city-level air quality and is faster and kinder to privacy.
 const OPTIONS: PositionOptions = {
   enableHighAccuracy: false,
@@ -19,6 +26,8 @@ const OPTIONS: PositionOptions = {
   maximumAge: 600_000,
 };
 
+// GeolocationPositionError codes (PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT). Literal
+// numbers because the constants live on a class that jsdom and some browsers do not expose.
 const FAILURE_BY_CODE: Readonly<Record<number, GeolocationFailure>> = {
   1: 'denied',
   2: 'unavailable',
@@ -34,10 +43,9 @@ const browserGeolocation = (): Geolocation | null =>
  * @param geolocation - Injectable for tests; defaults to the browser's (null if unsupported).
  * @returns The state and a `locate` function that asks for the position.
  */
-export function useGeolocation(geolocation: Geolocation | null = browserGeolocation()): {
-  readonly state: GeolocationState;
-  readonly locate: () => void;
-} {
+export function useGeolocation(
+  geolocation: Geolocation | null = browserGeolocation(),
+): GeolocationRequest {
   const [state, setState] = useState<GeolocationState>({ status: 'idle' });
 
   const locate = useCallback(() => {

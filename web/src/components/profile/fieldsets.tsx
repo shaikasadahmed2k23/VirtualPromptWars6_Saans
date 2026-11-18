@@ -1,12 +1,18 @@
 import type { JSX, ReactNode } from 'react';
 
-import { INPUT_LIMITS } from '@saans/shared';
+import {
+  COMMUTE_MODES,
+  COOKING_FUELS,
+  EXERCISE_TIMINGS,
+  INPUT_LIMITS,
+  WORK_LOCATIONS,
+} from '@saans/shared';
 
+import { useFieldBinder } from '../../hooks/use-field-binder.js';
 import type { ProfileForm } from '../../hooks/use-profile-form.js';
 import { useI18n } from '../../i18n/i18n-context.js';
 
 import { CheckboxField, NumberField, SelectField, TextAreaField } from './fields.js';
-import { useFieldBinder } from './use-field-binder.js';
 
 /** Props shared by every fieldset: the form state and its actions. */
 export interface FieldsetProps {
@@ -58,13 +64,10 @@ export function CommuteFieldset({ form }: FieldsetProps): JSX.Element {
   return (
     <Group legend={t.profile.commute}>
       <SelectField
-        name="commuteMode"
         label={t.profile.mode}
-        value={form.values.commuteMode}
-        options={t.profile.modes}
-        onChange={(value) => {
-          form.update('commuteMode', value);
-        }}
+        values={COMMUTE_MODES}
+        labels={t.profile.modes}
+        {...bind.choice('commuteMode')}
       />
       <NumberField label={t.profile.distance} step="0.5" {...bind.text('distanceKm')} />
     </Group>
@@ -82,25 +85,19 @@ export function ScheduleFieldset({ form }: FieldsetProps): JSX.Element {
   return (
     <Group legend={t.profile.schedule}>
       <SelectField
-        name="workLocation"
         label={t.profile.workLocation}
-        value={form.values.workLocation}
-        options={t.profile.workLocations}
-        onChange={(value) => {
-          form.update('workLocation', value);
-        }}
+        values={WORK_LOCATIONS}
+        labels={t.profile.workLocations}
+        {...bind.choice('workLocation')}
       />
       <NumberField label={t.profile.officeDays} {...bind.text('officeDaysPerWeek')} />
       <NumberField label={t.profile.startHour} {...bind.text('startHour')} />
       <NumberField label={t.profile.endHour} {...bind.text('endHour')} />
       <SelectField
-        name="exerciseTiming"
         label={t.profile.exercise}
-        value={form.values.exerciseTiming}
-        options={t.profile.exerciseTimings}
-        onChange={(value) => {
-          form.update('exerciseTiming', value);
-        }}
+        values={EXERCISE_TIMINGS}
+        labels={t.profile.exerciseTimings}
+        {...bind.choice('exerciseTiming')}
       />
       <NumberField label={t.profile.minutes} {...bind.text('minutesPerDay')} />
     </Group>
@@ -118,13 +115,10 @@ export function HomeFieldset({ form }: FieldsetProps): JSX.Element {
   return (
     <Group legend={t.profile.home}>
       <SelectField
-        name="cookingFuel"
         label={t.profile.fuel}
-        value={form.values.cookingFuel}
-        options={t.profile.fuels}
-        onChange={(value) => {
-          form.update('cookingFuel', value);
-        }}
+        values={COOKING_FUELS}
+        labels={t.profile.fuels}
+        {...bind.choice('cookingFuel')}
       />
       <div className="self-end">
         <CheckboxField label={t.profile.purifier} {...bind.flag('hasPurifier')} />

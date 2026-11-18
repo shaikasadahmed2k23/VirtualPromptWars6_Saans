@@ -9,13 +9,8 @@ import { useAsyncTask, type AsyncState } from './use-async-task.js';
 /** Wait this long after the last keystroke before searching. */
 export const SEARCH_DEBOUNCE_MS = 300;
 
-/**
- * Returns `value` once it has stopped changing for `delayMs`.
- * @param value - Rapidly changing value.
- * @param delayMs - Quiet period.
- * @returns The debounced value.
- */
-export function useDebouncedValue<T>(value: T, delayMs: number): T {
+// Returns `value` once it has stopped changing for `delayMs`.
+function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
     const timer = setTimeout(() => {

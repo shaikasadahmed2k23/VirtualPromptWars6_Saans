@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import { useId, type JSX } from 'react';
 
 import type { PlanResponse } from '@saans/shared';
 
@@ -21,6 +21,7 @@ export interface PlanResultsProps {
  */
 export function PlanResults({ plan }: PlanResultsProps): JSX.Element {
   const { t } = useI18n();
+  const impactsHeadingId = useId();
   return (
     // The plan keeps the language it was written in, even if the UI language changes later.
     <article lang={plan.language} className="space-y-8">
@@ -31,8 +32,8 @@ export function PlanResults({ plan }: PlanResultsProps): JSX.Element {
       <RoutineTimeline title={t.plan.routine} blocks={plan.routine} />
       <TipList title={t.plan.indoor} tips={plan.indoorHacks} />
       <TipList title={t.plan.alternatives} tips={plan.alternatives} />
-      <section aria-labelledby="impacts-heading" className="space-y-3">
-        <h3 id="impacts-heading" className="font-semibold">
+      <section aria-labelledby={impactsHeadingId} className="space-y-3">
+        <h3 id={impactsHeadingId} className="font-semibold">
           {t.plan.impacts}
         </h3>
         <ul className="grid gap-3 sm:grid-cols-2">

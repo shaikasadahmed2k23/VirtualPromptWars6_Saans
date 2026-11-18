@@ -1,6 +1,13 @@
 import { useCallback, useState } from 'react';
 
-import type { CommuteMode, CookingFuel, Language, UserProfile } from '@saans/shared';
+import type {
+  CommuteMode,
+  CookingFuel,
+  ExerciseTiming,
+  Language,
+  UserProfile,
+  WorkLocation,
+} from '@saans/shared';
 
 import type { Messages } from '../i18n/en.js';
 
@@ -14,11 +21,11 @@ export interface ProfileFormValues {
   readonly hasSensitiveMembers: boolean;
   readonly commuteMode: CommuteMode;
   readonly distanceKm: string;
-  readonly workLocation: UserProfile['work']['location'];
+  readonly workLocation: WorkLocation;
   readonly officeDaysPerWeek: string;
   readonly startHour: string;
   readonly endHour: string;
-  readonly exerciseTiming: UserProfile['exercise']['timing'];
+  readonly exerciseTiming: ExerciseTiming;
   readonly minutesPerDay: string;
   readonly hasPurifier: boolean;
   readonly cookingFuel: CookingFuel;
@@ -63,6 +70,23 @@ const FIELD_BY_PATH: Readonly<Record<string, readonly [FieldName, FieldErrorKey]
   'exercise.minutesPerDay': ['minutesPerDay', 'minutes'],
   notes: ['notes', 'notes'],
 };
+
+// Every field that can fail validation, in the order the schema reports them.
+const VALIDATED_FIELDS: readonly FieldName[] = [
+  ...new Set(Object.values(FIELD_BY_PATH).map(([field]) => field)),
+];
+
+/**
+ * The fields that failed validation, with their message keys, in schema order.
+ * @param errors - Field → error key map from {@link validateProfile}.
+ * @returns One `[field, errorKey]` pair per failed field.
+ */
+export function listFieldErrors(errors: FieldErrors): (readonly [FieldName, FieldErrorKey])[] {
+  return VALIDATED_FIELDS.flatMap((name) => {
+    const errorKey = errors[name];
+    return errorKey === undefined ? [] : [[name, errorKey] as const];
+  });
+}
 
 // An empty box is "no number", not zero.
 const toNumber = (value: string): number => (value.trim() === '' ? Number.NaN : Number(value));

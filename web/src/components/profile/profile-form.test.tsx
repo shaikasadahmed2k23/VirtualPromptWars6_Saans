@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -11,7 +11,7 @@ import { ProfileForm } from './profile-form.js';
 const PLACE = { latitude: 28.65, longitude: 77.23, label: 'Delhi, India' };
 
 const setup = (place: typeof PLACE | null = PLACE) => {
-  const onSubmit = vi.fn();
+  const onSubmit = vi.fn<(profile: UserProfile) => void>();
   renderWithProviders(<ProfileForm place={place} submitting={false} onSubmit={onSubmit} />);
   return { onSubmit, user: userEvent.setup() };
 };
@@ -59,12 +59,23 @@ describe('ProfileForm', () => {
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalled();
     });
-    const profile = onSubmit.mock.calls[0]?.[0] as UserProfile | undefined;
+    const profile = onSubmit.mock.calls[0]?.[0];
     expect(profile?.work.location).toBe('home');
     expect(profile?.exercise.timing).toBe('none');
     expect(profile?.cookingFuel).toBe('biomass');
     expect(profile?.household.hasSensitiveMembers).toBe(true);
     expect(profile).not.toHaveProperty('notes');
+  });
+
+  it('ignores a select value that is not one of its options', async () => {
+    const { onSubmit, user } = setup();
+    const fuel = screen.getByLabelText('Cooking fuel');
+    fireEvent.change(fuel, { target: { value: 'dynamite' } });
+    expect(fuel).toHaveValue('lpg');
+    await submit(user);
+    await waitFor(() => {
+      expect(onSubmit.mock.calls[0]?.[0].cookingFuel).toBe('lpg');
+    });
   });
 
   it('blocks submission and explains each invalid field inline and in a focused summary', async () => {

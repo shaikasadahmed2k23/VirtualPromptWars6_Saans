@@ -29,7 +29,7 @@ export const BEST_WINDOW = {
   allUnsafe: false,
 } as const;
 
-export const WORST_WINDOW = {
+const WORST_WINDOW = {
   ...BEST_WINDOW,
   start: '2026-11-18T07:00',
   end: '2026-11-18T09:00',

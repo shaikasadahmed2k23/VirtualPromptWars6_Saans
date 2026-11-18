@@ -1,7 +1,8 @@
-import type { FieldName, ProfileForm, ProfileFormValues } from '../../hooks/use-profile-form.js';
-import { useI18n } from '../../i18n/i18n-context.js';
+import { useI18n } from '../i18n/i18n-context.js';
 
-/** Fields holding free text or numbers-as-text (not fixed choices). */
+import type { FieldName, ProfileForm, ProfileFormValues } from './use-profile-form.js';
+
+/** Fields holding free text or numbers-as-text. */
 export type TextFieldName = {
   [K in FieldName]: string extends ProfileFormValues[K] ? K : never;
 }[FieldName];
@@ -10,6 +11,9 @@ export type TextFieldName = {
 export type FlagFieldName = {
   [K in FieldName]: ProfileFormValues[K] extends boolean ? K : never;
 }[FieldName];
+
+/** Fields holding one of a fixed set of strings (rendered as a select). */
+export type ChoiceFieldName = Exclude<FieldName, TextFieldName | FlagFieldName>;
 
 /** Props a text-like field needs, produced by {@link useFieldBinder}. */
 export interface TextBinding {
@@ -26,15 +30,26 @@ export interface FlagBinding {
   readonly onChange: (checked: boolean) => void;
 }
 
+/** Props a select needs (besides its values and labels), produced by {@link useFieldBinder}. */
+export interface ChoiceBinding<K extends ChoiceFieldName> {
+  readonly name: K;
+  readonly value: ProfileFormValues[K];
+  readonly onChange: (value: ProfileFormValues[K]) => void;
+}
+
+/** The binding factories returned by {@link useFieldBinder}. */
+export interface FieldBinder {
+  readonly text: (name: TextFieldName) => TextBinding;
+  readonly flag: (name: FlagFieldName) => FlagBinding;
+  readonly choice: <K extends ChoiceFieldName>(name: K) => ChoiceBinding<K>;
+}
+
 /**
  * Binds form fields to the form state: value, change handler and translated error.
  * @param form - The profile form.
- * @returns `text(name)` and `flag(name)` binding factories.
+ * @returns `text`, `flag` and `choice` binding factories, one per kind of control.
  */
-export function useFieldBinder(form: ProfileForm): {
-  readonly text: (name: TextFieldName) => TextBinding;
-  readonly flag: (name: FlagFieldName) => FlagBinding;
-} {
+export function useFieldBinder(form: ProfileForm): FieldBinder {
   const { t } = useI18n();
   return {
     text: (name) => {
@@ -53,6 +68,13 @@ export function useFieldBinder(form: ProfileForm): {
       checked: form.values[name],
       onChange: (checked) => {
         form.update(name, checked);
+      },
+    }),
+    choice: (name) => ({
+      name,
+      value: form.values[name],
+      onChange: (value) => {
+        form.update(name, value);
       },
     }),
   };

@@ -3,12 +3,7 @@ import { useRef, useState, type FormEvent, type JSX, type Ref } from 'react';
 import type { UserProfile } from '@saans/shared';
 
 import type { SelectedPlace } from '../../hooks/selected-place.js';
-import {
-  useProfileForm,
-  type FieldErrorKey,
-  type FieldErrors,
-  type FieldName,
-} from '../../hooks/use-profile-form.js';
+import { listFieldErrors, useProfileForm, type FieldErrors } from '../../hooks/use-profile-form.js';
 import { useI18n } from '../../i18n/i18n-context.js';
 import { SectionCard } from '../ui/section-card.js';
 
@@ -99,7 +94,7 @@ function ErrorSummary({
 }: ErrorSummaryProps): JSX.Element | null {
   const { t } = useI18n();
   const labels = useFieldLabels();
-  const fields = Object.entries(errors) as [FieldName, FieldErrorKey][];
+  const fields = listFieldErrors(errors);
   if (fields.length === 0 && !needsLocation) return null;
   return (
     <div

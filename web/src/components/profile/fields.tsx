@@ -89,18 +89,20 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
 /** Props for {@link SelectField}. */
 export interface SelectFieldProps<T extends string> extends FieldBase {
   readonly value: T;
-  readonly options: Readonly<Record<T, string>>;
+  /** Allowed values in display order (the shared constant, e.g. `COMMUTE_MODES`). */
+  readonly values: readonly T[];
+  readonly labels: Readonly<Record<T, string>>;
   readonly onChange: (value: T) => void;
 }
 
 /**
- * Labelled `<select>` built from a value → label map.
- * @param props - Field name, label, value, options and change handler.
+ * Labelled `<select>` over a fixed list of values. The DOM hands back a plain string, so the
+ * choice is matched against `values` rather than cast; anything else is ignored.
+ * @param props - Field name, label, value, allowed values, their labels and change handler.
  * @returns The field.
  */
 export function SelectField<T extends string>(props: SelectFieldProps<T>): JSX.Element {
-  const { name, label, value, options, onChange } = props;
-  const entries = Object.entries(options) as [T, string][];
+  const { name, label, value, values, labels, onChange } = props;
   return (
     <div>
       <label htmlFor={fieldId(name)} className="block font-medium">
@@ -111,14 +113,15 @@ export function SelectField<T extends string>(props: SelectFieldProps<T>): JSX.E
         name={name}
         value={value}
         onChange={(event) => {
-          onChange(event.target.value as T);
+          const picked = values.find((option) => option === event.target.value);
+          if (picked !== undefined) onChange(picked);
         }}
         aria-describedby={describedBy(props)}
         className={INPUT_CLASS}
       >
-        {entries.map(([optionValue, optionLabel]) => (
-          <option key={optionValue} value={optionValue}>
-            {optionLabel}
+        {values.map((option) => (
+          <option key={option} value={option}>
+            {labels[option]}
           </option>
         ))}
       </select>
