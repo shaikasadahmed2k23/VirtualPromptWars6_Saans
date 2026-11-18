@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { UpstreamError } from '../lib/errors.js';
 import { context } from '../test/fixtures.js';
 
+import type { AiFailure } from './ai-failure.js';
 import {
   GEMINI_MAX_ATTEMPTS,
   GeminiPlanGenerator,
@@ -91,6 +92,91 @@ describe('GeminiPlanGenerator', () => {
     await expect(generator(flaky).generate(context())).resolves.toMatchObject({
       summary: validOutput.summary,
     });
+  });
+});
+
+describe('GeminiPlanGenerator failure logging', () => {
+  class FakeApiError extends Error {
+    constructor(readonly status: number) {
+      super('API key not valid. Please pass a valid API key.');
+    }
+  }
+
+  interface AttemptFields {
+    readonly attempt: number;
+    readonly model: string;
+  }
+
+  const logged = async (
+    generateContent: GenerateContentFn,
+    timeoutMs?: number,
+  ): Promise<(AiFailure & AttemptFields)[]> => {
+    const warn = vi.fn<(details: object, message: string) => void>();
+    const logging = new GeminiPlanGenerator({
+      generateContent,
+      model: 'test-model',
+      logger: { warn },
+      ...(timeoutMs === undefined ? {} : { timeoutMs }),
+    });
+    await logging.generate(context()).catch(() => undefined);
+    return warn.mock.calls.map(([details]) => details as AiFailure & AttemptFields);
+  };
+
+  it.each([
+    {
+      label: 'an HTTP rejection',
+      call: () => Promise.reject(new FakeApiError(400)),
+      reason: 'http_error',
+      status: 400,
+    },
+    {
+      label: 'invalid JSON',
+      call: () => Promise.resolve({ text: 'nope' }),
+      reason: 'bad_json',
+      status: undefined,
+    },
+    {
+      label: 'a schema violation',
+      call: () =>
+        Promise.resolve({ text: JSON.stringify({ ...validOutput, routine: [{ start: '7' }] }) }),
+      reason: 'schema',
+      status: undefined,
+    },
+    {
+      label: 'an unknown impact id',
+      call: () =>
+        Promise.resolve({
+          text: JSON.stringify({
+            ...validOutput,
+            impactExplanations: [{ impactId: 'nope', explanation: 'x' }],
+          }),
+        }),
+      reason: 'unknown_impact',
+      status: undefined,
+    },
+  ])('logs the reason for $label on every attempt', async ({ call, reason, status }) => {
+    const entries = await logged(vi.fn<GenerateContentFn>(call));
+    expect(entries.map((entry) => entry.reason)).toEqual([reason, reason]);
+    expect(entries.map((entry) => entry.attempt)).toEqual([1, 2]);
+    expect(entries[0]?.status).toBe(status);
+    expect(entries[0]?.model).toBe('test-model');
+  });
+
+  it('logs a timeout as such', async () => {
+    const entries = await logged(() => new Promise(() => undefined), 10);
+    expect(entries.map((entry) => entry.reason)).toEqual(['timeout', 'timeout']);
+  });
+
+  it('never logs the prompt, the model output or the error message', async () => {
+    const entries = await logged(() => Promise.reject(new FakeApiError(403)));
+    const text = JSON.stringify(entries);
+    expect(text).not.toContain('<HOUSEHOLD>');
+    expect(text).not.toContain('API key not valid');
+  });
+
+  it('classifies an error with no status as other', async () => {
+    const entries = await logged(() => Promise.reject(new Error('socket hang up')));
+    expect(entries[0]).toMatchObject({ reason: 'other', errorClass: 'Error' });
   });
 });
 

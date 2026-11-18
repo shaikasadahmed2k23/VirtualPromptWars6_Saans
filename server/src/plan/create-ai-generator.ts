@@ -28,6 +28,7 @@ export function createAiGenerator(
   const ai = new GoogleGenAI({ apiKey: geminiApiKey });
   return new GeminiPlanGenerator({
     model: geminiModel,
+    logger,
     generateContent: (request) => ai.models.generateContent(request),
   });
 }

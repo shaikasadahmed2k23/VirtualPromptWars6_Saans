@@ -150,6 +150,20 @@ describe('PlanService', () => {
     expect(plan.source).toBe('fallback');
     expect(plan.impacts[0]?.title).toBe('दफ़्तर के दिनों में मेट्रो लें');
     expect(logger.warn).toHaveBeenCalledOnce();
+    expect(logger.warn).toHaveBeenCalledWith(
+      { reason: 'other', errorClass: 'UpstreamError' },
+      'AI plan failed; serving the offline plan',
+    );
+  });
+
+  it('logs why the offline plan was served when AI is not configured', async () => {
+    const { service, logger } = setup({});
+    const plan = await service.createPlan(PROFILE);
+    expect(plan.source).toBe('fallback');
+    expect(logger.warn).toHaveBeenCalledWith(
+      { reason: 'ai_not_configured' },
+      'Serving the offline plan',
+    );
   });
 
   it('serves a repeat request in the same hour from cache', async () => {

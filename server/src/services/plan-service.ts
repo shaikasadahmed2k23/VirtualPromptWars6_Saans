@@ -15,6 +15,7 @@ import type { Clock } from '../lib/clock.js';
 import { NotFoundError } from '../lib/errors.js';
 import type { WarnLogger } from '../lib/log.js';
 import type { TtlCache } from '../lib/ttl-cache.js';
+import { classifyAiFailure } from '../plan/ai-failure.js';
 import { deriveImpacts } from '../plan/candidate-impacts.js';
 import { PLAN_COPY } from '../plan/copy/copies.js';
 import { explainImpact } from '../plan/copy/explain-impact.js';
@@ -139,11 +140,13 @@ export class PlanService {
     context: PlanContext,
   ): Promise<{ content: PlanContent; source: PlanSource }> {
     const { aiGenerator, fallbackGenerator, logger } = this.deps;
-    if (aiGenerator !== null) {
+    if (aiGenerator === null) {
+      logger.warn({ reason: 'ai_not_configured' }, 'Serving the offline plan');
+    } else {
       try {
         return { content: await aiGenerator.generate(context), source: 'ai' };
       } catch (error) {
-        logger.warn({ err: error }, 'AI plan failed; serving the offline plan');
+        logger.warn(classifyAiFailure(error), 'AI plan failed; serving the offline plan');
       }
     }
     return { content: await fallbackGenerator.generate(context), source: 'fallback' };

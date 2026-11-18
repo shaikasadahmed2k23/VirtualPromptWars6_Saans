@@ -1,7 +1,9 @@
 import type { PlanContent } from '@saans/shared';
 
 import { UpstreamError } from '../lib/errors.js';
+import type { WarnLogger } from '../lib/log.js';
 
+import { AiTimeoutError, AiUnknownImpactError, classifyAiFailure } from './ai-failure.js';
 import { GEMINI_RESPONSE_SCHEMA, geminiPlanSchema, toPlanContent } from './gemini-schema.js';
 import type { PlanContext, PlanGenerator } from './plan-generator.js';
 import { SYSTEM_INSTRUCTION, buildUserPrompt } from './prompt.js';
@@ -37,6 +39,8 @@ export interface GeminiPlanGeneratorOptions {
   /** Model id from configuration (`GEMINI_MODEL`); never hardcoded. */
   readonly model: string;
   readonly timeoutMs?: number;
+  /** Receives one warning per failed attempt (reason only; never the key, prompt or output). */
+  readonly logger?: WarnLogger;
 }
 
 function parseOutput(text: string | undefined, context: PlanContext): PlanContent {
@@ -45,7 +49,7 @@ function parseOutput(text: string | undefined, context: PlanContext): PlanConten
   const known = new Set<string>(context.impacts.map((impact) => impact.id));
   const unknown = plan.impactExplanations.find(({ impactId }) => !known.has(impactId));
   if (unknown !== undefined) {
-    throw new UpstreamError(`AI plan referenced an unknown impact id: ${unknown.impactId}`);
+    throw new AiUnknownImpactError(`AI plan referenced an unknown impact id: ${unknown.impactId}`);
   }
   return toPlanContent(plan);
 }
@@ -68,6 +72,10 @@ export class GeminiPlanGenerator implements PlanGenerator {
         return await this.attempt(context);
       } catch (error) {
         failures.push(error);
+        this.options.logger?.warn(
+          { ...classifyAiFailure(error), attempt: attempt + 1, model: this.options.model },
+          'Gemini attempt failed',
+        );
       }
     }
     throw new UpstreamError('AI plan generation failed', { cause: new AggregateError(failures) });
@@ -78,7 +86,7 @@ export class GeminiPlanGenerator implements PlanGenerator {
     const timeoutMs = this.options.timeoutMs ?? GEMINI_TIMEOUT_MS;
     const timedOut = new Promise<never>((_resolve, reject) => {
       controller.signal.addEventListener('abort', () => {
-        reject(new UpstreamError(`AI plan timed out after ${String(timeoutMs)} ms`));
+        reject(new AiTimeoutError(`AI plan timed out after ${String(timeoutMs)} ms`));
       });
     });
     const timer = setTimeout(() => {
