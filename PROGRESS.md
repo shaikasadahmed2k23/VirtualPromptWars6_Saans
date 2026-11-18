@@ -69,6 +69,17 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
   - `/api/air` serves the last good forecast for up to 6 h past its 15-minute TTL, with `staleMinutes` in the response, `Cache-Control: no-store`, and a notice in the UI.
   - A new `GEOCODING_UNAVAILABLE` code so the UI says "City search failed" (en + hi) rather than blaming the air-quality service.
 
+## 5.2 Gemini on Render, live plan check, front-end speed (2026-11-18)
+
+- **Why prod fell back.** `gemini-3.8-flash` on this key answered 503 "high demand" or 429 quota, or ran past the 8 s per-call timeout even with a low thinking level. `gemini-3.1-flash-lite` answers in about 2 s, so Render now uses it. `GEMINI_THINKING_LEVEL` (optional) exists for thinking models.
+- **Model list.** `GEMINI_MODELS="a,b"` is tried in order, once each, inside a 20 s overall budget, then the rule-based plan takes over. `GEMINI_MODEL` still works alone and keeps its one retry. Every plan logs the model that served it; every failed attempt logs its reason.
+- **Live check of three profiles (source `ai` for all):** Delhi car commuter with two children (en), Lucknow elderly home-based with sensitive members (hi), Mumbai two-wheeler outdoor exerciser (en).
+  - First pass found: the field name `restHoursEquivalent` leaking into text, no mention of children, no doctor sentence, routine out of order and unclear which day a time was on, and generic summaries.
+  - Fixes: prompt rules (plain wording for rest hours, tailor to household, doctor sentence when sensitive members, day words from the location's clock, chronological routine, summary opens with the current category and the best time to act), plus `day` on every routine block.
+  - Second pass, checked by script against the plan's own numbers: no field names, every number in the text appears in the facts or the profile, children mentioned for Delhi, doctor sentence in the Lucknow Hindi plan, routine in chronological order with today/tomorrow labels, Hindi reads naturally and suggests LPG instead of biomass.
+- **Best Practices 96.** zod 4 probes `new Function` for its JIT; strict CSP reports that as an eval violation. `config({ jitless: true })` runs before any schema is built; no `unsafe-inline` was added.
+- **Speed.** zod and the schemas (about 86 kB) now load by dynamic import on first request or submit. Initial JavaScript fell from 281.6 kB (87.3 kB gzip) to 197 kB (64 kB gzip); local mobile Performance went from 82 to 91 and total blocking time from 760 ms to 370 ms. Not pursued by decision: swapping React, going under 150 kB, lazy-loading the Hindi dictionary.
+
 ## STATUS FOR ASAD
 
 **Done.** Phases 0–4. The server (NAQI, windows, impact engine, Open-Meteo providers, Gemini + offline fallback, HTTP layer) and the web UI (en/hi, accessible single page) are built, documented and pushed. `npm run check` is green: 46 shared + 287 server + 62 web tests. Coverage is 100 % on shared and server (domain held at 100 % by threshold) and 100 % lines / 98 % branches on web. CI has been green after every step.
