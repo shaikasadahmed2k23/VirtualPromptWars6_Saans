@@ -1,6 +1,6 @@
-import { NAQI_CATEGORY_NAMES, OVERNIGHT_INDOOR_HOURS, startsNow } from '@saans/shared';
+import { NAQI_CATEGORY_NAMES, OVERNIGHT_INDOOR_HOURS } from '@saans/shared';
 
-import { avoided, timeSpan, type PlanCopy } from './plan-copy.js';
+import { avoided, metroBenefits, timeSpan, type PlanCopy } from './plan-copy.js';
 
 const mopTip = {
   title: 'झाड़ू नहीं, पोछा लगाएँ',
@@ -28,17 +28,13 @@ export const HI_COPY: PlanCopy = {
   },
   categoryNames: NAQI_CATEGORY_NAMES.hi,
   days: { today: 'आज', tomorrow: 'कल' },
-  nowIsGood: 'अभी बाहर निकलने का अच्छा समय है।',
-  summary: ({ aqi, bestWindow, location, when }) => {
-    const now = `${location} में अभी हवा की गुणवत्ता ${HI_COPY.categoryNames[aqi.category]} है (NAQI ${String(aqi.value)})।`;
-    if (bestWindow === null) {
-      return `${now} अगले 24 घंटों में कोई साफ़ समय नहीं दिखता, इसलिए ज़्यादातर घर के अंदर रहने की योजना बनाएँ।`;
-    }
-    if (!bestWindow.allUnsafe && startsNow(bestWindow.start, when.localNow)) {
-      return `${now} ${HI_COPY.nowIsGood}`;
-    }
-    const verdict = bestWindow.allUnsafe ? 'सबसे कम ख़राब' : 'सबसे साफ़';
-    return `${now} अगले 24 घंटों में बाहर निकलने का ${verdict} समय ${timeSpan(bestWindow, when)} है।`;
+  summary: {
+    current: (location, category, naqi) =>
+      `${location} में अभी हवा की गुणवत्ता ${category} है (NAQI ${String(naqi)})।`,
+    noWindow: 'अगले 24 घंटों में कोई साफ़ समय नहीं दिखता, इसलिए ज़्यादातर घर के अंदर रहने की योजना बनाएँ।',
+    nowIsGood: 'अभी बाहर निकलने का अच्छा समय है।',
+    cleanest: (span) => `अगले 24 घंटों में बाहर निकलने का सबसे साफ़ समय ${span} है।`,
+    leastBad: (span) => `अगले 24 घंटों में बाहर निकलने का सबसे कम ख़राब समय ${span} है।`,
   },
   routine: {
     outdoor: {
@@ -122,17 +118,11 @@ export const HI_COPY: PlanCopy = {
     'commute-metro': {
       title: 'दफ़्तर के दिनों में मेट्रो लें',
       explain: (facts, { commuteMode }) => {
-        const { ug, pct } = avoided(facts);
-        // Either benefit can be absent: a car to the metro changes no exposure, bus to metro saves no CO2;
-        // with neither on offer the exposure clause reads as 0 rather than leaving the sentence empty.
-        const benefits = [
-          ...(facts.co2SavedKgPerWeek === null
-            ? []
-            : [`हर हफ़्ते लगभग ${String(facts.co2SavedKgPerWeek)} किलो CO2 बचती है`]),
-          ...((facts.exposureAvoided?.micrograms ?? 0) > 0 || facts.co2SavedKgPerWeek === null
-            ? [`आने-जाने में साँस से जाने वाला PM2.5 हर दफ़्तर-दिन लगभग ${ug} µg (${pct}%) घटता है`]
-            : []),
-        ];
+        const benefits = metroBenefits(facts, {
+          co2: (kg) => `हर हफ़्ते लगभग ${kg} किलो CO2 बचती है`,
+          exposure: (ug, pct) =>
+            `आने-जाने में साँस से जाने वाला PM2.5 हर दफ़्तर-दिन लगभग ${ug} µg (${pct}%) घटता है`,
+        });
         return `${HI_COPY.modeNames[commuteMode]} की जगह मेट्रो लेने से ${benefits.join(' और ')}। अनुमान।`;
       },
     },

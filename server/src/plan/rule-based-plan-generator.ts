@@ -12,7 +12,7 @@ import {
 
 import { PLAN_COPY } from './copy/copies.js';
 import { explainImpact } from './copy/explain-impact.js';
-import type { AirTier, PlanCopy } from './copy/plan-copy.js';
+import { summarize, type AirTier, type PlanCopy } from './copy/plan-copy.js';
 import { windowWhen } from './copy/window-when.js';
 import type { PlanContext, PlanGenerator } from './plan-generator.js';
 
@@ -93,7 +93,7 @@ export function dayTier(context: PlanContext): AirTier {
 export function buildFallbackContent(context: PlanContext): PlanContent {
   const copy = PLAN_COPY[context.language];
   return {
-    summary: copy.summary({
+    summary: summarize(copy, {
       aqi: context.currentAqi,
       bestWindow: context.bestWindow,
       location: context.locationLabel,
