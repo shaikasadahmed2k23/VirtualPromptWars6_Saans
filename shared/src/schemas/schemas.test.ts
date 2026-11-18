@@ -156,6 +156,7 @@ describe('API envelopes', () => {
         },
       ],
       source: 'fallback',
+      language: 'en',
     };
     expect(planResponseSchema.safeParse(response).success).toBe(true);
     expect(planResponseSchema.safeParse({ ...response, source: 'gemini' }).success).toBe(false);

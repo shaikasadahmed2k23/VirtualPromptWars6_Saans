@@ -103,6 +103,7 @@ export const PLAN_RESPONSE: PlanResponse = {
     },
   ],
   source: 'ai',
+  language: 'en',
 };
 
 export type FakeApi = { [K in keyof ApiClient]: Mock<ApiClient[K]> };

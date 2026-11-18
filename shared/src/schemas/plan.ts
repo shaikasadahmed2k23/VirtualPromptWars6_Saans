@@ -3,7 +3,13 @@ import { z } from 'zod';
 import { IMPACT_CATEGORIES, INPUT_LIMITS, PERCENT_SCALE, PLAN_SOURCES } from '../constants.js';
 
 import { naqiResultSchema, outdoorWindowSchema } from './air.js';
-import { boundedNumber, boundedText, clockTimeSchema, oneOf } from './primitives.js';
+import {
+  boundedNumber,
+  boundedText,
+  clockTimeSchema,
+  languageSchema,
+  oneOf,
+} from './primitives.js';
 
 const text = (label: string): z.ZodString => boundedText(label, INPUT_LIMITS.textMax);
 const title = (): z.ZodString => boundedText('title', INPUT_LIMITS.titleMax);
@@ -62,6 +68,8 @@ export const planResponseSchema = planContentSchema.omit({ impactExplanations: t
   worstWindow: outdoorWindowSchema.nullable(),
   impacts: z.array(impactItemSchema).max(INPUT_LIMITS.impactItemsMax),
   source: oneOf('source', PLAN_SOURCES),
+  /** Language the plan text is written in (may differ from the UI's after a toggle). */
+  language: languageSchema,
 });
 
 /** Exposure avoided in µg and percent. */

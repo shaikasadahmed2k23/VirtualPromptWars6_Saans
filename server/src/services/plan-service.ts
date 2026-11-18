@@ -139,6 +139,7 @@ export class PlanService {
         explanation: impactExplanations[facts.id] ?? explainImpact(facts, context),
       })),
       source,
+      language: profile.language,
     };
   }
 

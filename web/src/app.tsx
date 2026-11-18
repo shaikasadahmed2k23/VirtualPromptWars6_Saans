@@ -1,29 +1,50 @@
-import type { JSX } from 'react';
+import { useState, type JSX } from 'react';
 
-const MAIN_ID = 'main-content';
+import { AirNow } from './components/air/air-now.js';
+import { MAIN_ID, SiteHeader } from './components/layout/site-header.js';
+import { LocationSection } from './components/location/location-section.js';
+import type { SelectedPlace } from './components/location/selected-place.js';
+import { PlanSection } from './components/plan/plan-section.js';
+import { ProfileForm } from './components/profile/profile-form.js';
+import { useAirQuality } from './hooks/use-air-quality.js';
+import { usePlan } from './hooks/use-plan.js';
+import { useI18n } from './i18n/i18n-context.js';
+
+/** Props for {@link App}. */
+export interface AppProps {
+  /** Injectable for tests; defaults to the browser's geolocation. */
+  readonly geolocation?: Geolocation | null;
+}
 
 /**
- * Application shell: skip link plus header, main and footer landmarks.
- * @returns The root layout element.
+ * The single page: location → air now → household form → plan.
+ * @param props - Optional geolocation override.
+ * @returns The application.
  */
-export function App(): JSX.Element {
+export function App({ geolocation }: AppProps): JSX.Element {
+  const { t } = useI18n();
+  const [place, setPlace] = useState<SelectedPlace | null>(null);
+  const air = useAirQuality(place);
+  const plan = usePlan();
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <a
-        href={`#${MAIN_ID}`}
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:outline-3 focus:outline-blue-700"
-      >
-        Skip to main content
-      </a>
-      <header className="border-b border-slate-200 bg-white px-4 py-4">
-        <p className="text-xl font-bold">Saans</p>
-      </header>
-      <main id={MAIN_ID} tabIndex={-1} className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold">Breathe easier through winter smog</h1>
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main id={MAIN_ID} tabIndex={-1} className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+        <h1 className="text-3xl font-bold tracking-tight">{t.tagline}</h1>
+        <LocationSection
+          place={place}
+          onSelect={setPlace}
+          {...(geolocation === undefined ? {} : { geolocation })}
+        />
+        <AirNow air={air} />
+        <ProfileForm
+          place={place}
+          submitting={plan.state.status === 'loading'}
+          onSubmit={plan.submit}
+        />
+        <PlanSection plan={plan} />
       </main>
-      <footer className="px-4 py-6 text-sm text-slate-700">
-        Air quality data: Open-Meteo. Figures shown are estimates.
-      </footer>
+      <footer className="mx-auto max-w-3xl px-4 pb-10 text-sm text-muted">{t.footer}</footer>
     </div>
   );
 }
