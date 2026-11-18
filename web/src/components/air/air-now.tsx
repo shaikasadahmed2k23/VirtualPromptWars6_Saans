@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 
-import type { AirResponse } from '@saans/shared';
+import { clockTime, type AirResponse } from '@saans/shared';
 
 import type { AirQuality } from '../../hooks/use-air-quality.js';
 import { useI18n } from '../../i18n/i18n-context.js';
@@ -49,7 +49,7 @@ function AirReading({ data }: { readonly data: AirResponse }): JSX.Element {
         <p className="font-medium">{t.air.dominant(t.air.pollutants[current.dominantPollutant])}</p>
         <p>{t.advisories[current.category]}</p>
         <p className="text-sm text-muted">
-          {t.air.asOf(current.time.slice(-5))} · {t.air.indicative}
+          {t.air.asOf(clockTime(current.time))} · {t.air.indicative}
         </p>
       </div>
       {data.staleMinutes !== null && (

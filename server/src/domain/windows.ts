@@ -3,12 +3,13 @@ import {
   DISPLAY_DECIMALS,
   HOURS_PER_DAY,
   WAKING_HOURS,
+  clockHour,
   type HourlyAirSample,
   type OutdoorWindow,
 } from '@saans/shared';
 
 import { DomainError } from './domain-error.js';
-import { epochHourToLocal, localEpochHour, localToEpochMs } from './local-time.js';
+import { epochHourToLocal, localEpochHour } from './local-time.js';
 import { categoryForIndex, computeNaqi } from './naqi.js';
 import { roundTo } from './rounding.js';
 
@@ -22,8 +23,8 @@ export interface WindowOptions {
   readonly wakingEnd: number;
 }
 
-/** Product defaults: a 2-hour window between 06:00 and 22:00. */
-export const DEFAULT_WINDOW_OPTIONS: WindowOptions = {
+// Product defaults: a 2-hour window between 06:00 and 22:00.
+const DEFAULT_WINDOW_OPTIONS: WindowOptions = {
   lengthHours: DEFAULT_WINDOW_HOURS,
   wakingStart: WAKING_HOURS.start,
   wakingEnd: WAKING_HOURS.end,
@@ -65,7 +66,7 @@ function scoreHours(samples: readonly HourlyAirSample[]): ScoredHour[] {
       const naqi = computeNaqi(sample);
       return {
         epochHour: localEpochHour(sample.time),
-        hourOfDay: new Date(localToEpochMs(sample.time)).getUTCHours(),
+        hourOfDay: Number(clockHour(sample.time)),
         naqi: naqi.value,
         pm25: sample.pm25,
         severe: naqi.category === 'severe',

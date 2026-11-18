@@ -1,13 +1,14 @@
 import {
   DISPLAY_DECIMALS,
   HOURS_PER_DAY,
+  startOfHour,
   type HourlyAirSample,
   type HourlyNaqi,
   type NaqiResult,
   type OutdoorWindow,
 } from '@saans/shared';
 
-import { addHours, startOfHour } from './local-time.js';
+import { addHours } from './local-time.js';
 import { computeNaqi } from './naqi.js';
 import { roundTo } from './rounding.js';
 import { findBestWindow, findWorstWindow } from './windows.js';

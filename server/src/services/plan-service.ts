@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import {
   MS_PER_HOUR,
   formatPlaceLabel,
+  startOfHour,
   type Location,
   type PlanContent,
   type PlanResponse,
@@ -10,7 +11,6 @@ import {
   type UserProfile,
 } from '@saans/shared';
 
-import { startOfHour } from '../domain/local-time.js';
 import { scheduleRoutine } from '../domain/routine-schedule.js';
 import type { Clock } from '../lib/clock.js';
 import { NotFoundError } from '../lib/errors.js';

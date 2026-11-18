@@ -3,6 +3,8 @@ import type { JSX } from 'react';
 import {
   HOURS_PER_DAY,
   NAQI_MAX_INDEX,
+  PERCENT_SCALE,
+  clockHour,
   relativeDay,
   startsNow,
   type AirResponse,
@@ -19,7 +21,6 @@ import { inWindow, windowSpan } from './window-format.js';
 
 // Label every third hour so the strip stays readable on phones.
 const LABEL_EVERY_HOURS = 3;
-const PERCENT = 100;
 
 /** Props for {@link ForecastStrip}. */
 export interface ForecastStripProps {
@@ -87,12 +88,12 @@ function Bar({ hour, index, data }: BarProps): JSX.Element {
       <span
         className={`w-full rounded-t border-b-4 ${marker}`}
         style={{
-          height: `${String(Math.max(2, (hour.naqi / NAQI_MAX_INDEX) * PERCENT))}%`,
+          height: `${String(Math.max(2, (hour.naqi / NAQI_MAX_INDEX) * PERCENT_SCALE))}%`,
           backgroundColor: CATEGORY_COLOURS[hour.category].background,
         }}
       />
       <span className="mt-1 h-4 text-[10px] text-muted">
-        {index % LABEL_EVERY_HOURS === 0 ? hour.time.slice(11, 13) : ''}
+        {index % LABEL_EVERY_HOURS === 0 ? clockHour(hour.time) : ''}
       </span>
     </li>
   );

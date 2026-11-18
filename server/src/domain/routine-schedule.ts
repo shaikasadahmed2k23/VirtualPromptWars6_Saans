@@ -1,9 +1,12 @@
-import { relativeDay, type RoutineBlock, type ScheduledRoutineBlock } from '@saans/shared';
+import {
+  HOURS_PER_DAY,
+  localDate,
+  relativeDay,
+  type RoutineBlock,
+  type ScheduledRoutineBlock,
+} from '@saans/shared';
 
 import { addHours } from './local-time.js';
-
-const DATE_LENGTH = 'YYYY-MM-DD'.length;
-const HOURS_PER_DAY = 24;
 
 interface Placed {
   readonly block: RoutineBlock;
@@ -13,7 +16,7 @@ interface Placed {
 
 // The next run of a block that has not yet finished: today's if it ends after now, else tomorrow's.
 function place(block: RoutineBlock, localNow: string): Placed {
-  const date = localNow.slice(0, DATE_LENGTH);
+  const date = localDate(localNow);
   const startsToday = `${date}T${block.start}`;
   const endsToday = `${date}T${block.end}`;
   const endsAt = block.end <= block.start ? addHours(endsToday, HOURS_PER_DAY) : endsToday;

@@ -1,10 +1,8 @@
 import type { JSX } from 'react';
 
-import type { HourlyNaqi } from '@saans/shared';
+import { clockTime, localDate, type HourlyNaqi } from '@saans/shared';
 
 import { useI18n } from '../../i18n/i18n-context.js';
-
-import { clockOf } from './window-format.js';
 
 /** Props for {@link ForecastTable}. */
 export interface ForecastTableProps {
@@ -31,7 +29,7 @@ export function ForecastTable({ hours }: ForecastTableProps): JSX.Element {
       <tbody>
         {hours.map((hour) => (
           <tr key={hour.time}>
-            <th scope="row">{`${hour.time.slice(0, 10)} ${clockOf(hour.time)}`}</th>
+            <th scope="row">{`${localDate(hour.time)} ${clockTime(hour.time)}`}</th>
             <td>{hour.naqi}</td>
             <td>{t.categories[hour.category]}</td>
           </tr>

@@ -1,6 +1,7 @@
 import {
   NAQI_CATEGORIES,
   WAKING_HOURS,
+  clockTime,
   type CookingFuel,
   type NaqiCategory,
   type OutdoorWindow,
@@ -8,8 +9,6 @@ import {
   type RoutineBlock,
   type Tip,
 } from '@saans/shared';
-
-import { clockTime } from '../domain/local-time.js';
 
 import { PLAN_COPY } from './copy/copies.js';
 import { explainImpact } from './copy/explain-impact.js';

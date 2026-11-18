@@ -1,4 +1,5 @@
 import {
+  clockTime,
   relativeDay,
   type CommuteMode,
   type NaqiCategory,
@@ -8,7 +9,6 @@ import {
   type Tip,
 } from '@saans/shared';
 
-import { clockTime } from '../../domain/local-time.js';
 import type { ImpactId, KnownImpactFacts } from '../plan-generator.js';
 
 /** How polluted the day is, for choosing which indoor hacks to show. */

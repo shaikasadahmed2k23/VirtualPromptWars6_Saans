@@ -1,4 +1,5 @@
 import { HOURS_PER_DAY, MS_PER_HOUR } from './constants.js';
+import { localDate, startOfHour } from './local-time.js';
 
 /**
  * Which calendar day, at the location, an instant falls on relative to "now". Windows and routine
@@ -6,14 +7,9 @@ import { HOURS_PER_DAY, MS_PER_HOUR } from './constants.js';
  */
 export type RelativeDay = 'today' | 'tomorrow';
 
-const DATE_LENGTH = 'YYYY-MM-DD'.length;
-const HOUR_PREFIX_LENGTH = 'YYYY-MM-DDTHH'.length;
-
 // Calendar-day number of a local date-time; only differences between two of them are used.
 const dayNumber = (localTime: string): number =>
-  Math.floor(
-    Date.parse(`${localTime.slice(0, DATE_LENGTH)}T00:00Z`) / (HOURS_PER_DAY * MS_PER_HOUR),
-  );
+  Math.floor(Date.parse(`${localDate(localTime)}T00:00Z`) / (HOURS_PER_DAY * MS_PER_HOUR));
 
 /**
  * Names the calendar day of an instant relative to now, entirely in the location's local time
@@ -33,5 +29,5 @@ export function relativeDay(localTime: string, localNow: string): RelativeDay {
  * @returns True when `start` is at or before the start of the current hour.
  */
 export function startsNow(start: string, localNow: string): boolean {
-  return start <= `${localNow.slice(0, HOUR_PREFIX_LENGTH)}:00`;
+  return start <= startOfHour(localNow);
 }
