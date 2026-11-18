@@ -11,7 +11,7 @@ describe('loadConfig', () => {
       logLevel: 'info',
       webDistDir: 'web/dist',
       geminiApiKey: null,
-      geminiModel: null,
+      geminiModels: [],
       geminiThinkingLevel: null,
     });
   });
@@ -34,7 +34,7 @@ describe('loadConfig', () => {
       logLevel: 'warn',
       webDistDir: '/app/web/dist',
       geminiApiKey: 'test-key',
-      geminiModel: 'a-model',
+      geminiModels: ['a-model'],
       geminiThinkingLevel: 'low',
     });
   });
@@ -42,8 +42,18 @@ describe('loadConfig', () => {
   it('treats blank Gemini settings as not configured', () => {
     const config = loadConfig({ GEMINI_API_KEY: '   ', GEMINI_MODEL: '' });
     expect(config.geminiApiKey).toBeNull();
-    expect(config.geminiModel).toBeNull();
+    expect(config.geminiModels).toEqual([]);
     expect(config.geminiThinkingLevel).toBeNull();
+  });
+
+  it('reads an ordered model list, trimming, dropping blanks and duplicates', () => {
+    const config = loadConfig({ GEMINI_MODELS: ' a-model, b-model ,,a-model' });
+    expect(config.geminiModels).toEqual(['a-model', 'b-model']);
+  });
+
+  it('prefers GEMINI_MODELS over the single GEMINI_MODEL, which still works alone', () => {
+    expect(loadConfig({ GEMINI_MODEL: 'old', GEMINI_MODELS: 'new' }).geminiModels).toEqual(['new']);
+    expect(loadConfig({ GEMINI_MODEL: 'old' }).geminiModels).toEqual(['old']);
   });
 
   it('rejects an unknown thinking level', () => {

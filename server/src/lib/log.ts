@@ -8,6 +8,11 @@ export interface WarnLogger {
   warn: (details: object, message: string) => void;
 }
 
+/** Something that can record routine events and warnings. */
+export interface InfoLogger extends WarnLogger {
+  info: (details: object, message: string) => void;
+}
+
 /** Something that can record warnings and errors. */
 export interface ErrorLogger extends WarnLogger {
   error: (details: object, message: string) => void;

@@ -31,10 +31,10 @@ const validOutput = {
 
 describe('createAiGenerator', () => {
   it.each([
-    ['no key', { geminiApiKey: null, geminiModel: 'a-model', geminiThinkingLevel: null }],
-    ['no model', { geminiApiKey: 'k', geminiModel: null, geminiThinkingLevel: null }],
+    ['no key', { geminiApiKey: null, geminiModels: ['a-model'], geminiThinkingLevel: null }],
+    ['no model', { geminiApiKey: 'k', geminiModels: [], geminiThinkingLevel: null }],
   ])('returns null and warns when there is %s', (_label, config) => {
-    const logger = { warn: vi.fn() };
+    const logger = { warn: vi.fn(), info: vi.fn() };
     expect(createAiGenerator(config, logger)).toBeNull();
     expect(logger.warn).toHaveBeenCalledWith(
       expect.objectContaining({ hasKey: config.geminiApiKey !== null }),
@@ -44,9 +44,9 @@ describe('createAiGenerator', () => {
 
   it('wires the configured key and model into the Gemini SDK', async () => {
     sdk.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
-    const logger = { warn: vi.fn() };
+    const logger = { warn: vi.fn(), info: vi.fn() };
     const generator = createAiGenerator(
-      { geminiApiKey: 'test-key', geminiModel: 'a-model', geminiThinkingLevel: null },
+      { geminiApiKey: 'test-key', geminiModels: ['a-model'], geminiThinkingLevel: null },
       logger,
     );
     expect(generator).toBeInstanceOf(GeminiPlanGenerator);
@@ -61,8 +61,10 @@ describe('createAiGenerator', () => {
   it('sends no thinking setting unless one is configured, so every model works', async () => {
     sdk.generateContent.mockClear();
     sdk.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
-    const config = { geminiApiKey: 'k', geminiModel: 'a-model', geminiThinkingLevel: null };
-    await createAiGenerator(config, { warn: vi.fn() })?.generate(context({ impacts: [] }));
+    const config = { geminiApiKey: 'k', geminiModels: ['a-model'], geminiThinkingLevel: null };
+    await createAiGenerator(config, { warn: vi.fn(), info: vi.fn() })?.generate(
+      context({ impacts: [] }),
+    );
     const [request] = sdk.generateContent.mock.calls[0] as [{ config: object }];
     expect(request.config).not.toHaveProperty('thinkingConfig');
   });
@@ -72,10 +74,12 @@ describe('createAiGenerator', () => {
     sdk.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
     const config = {
       geminiApiKey: 'k',
-      geminiModel: 'a-model',
+      geminiModels: ['a-model'],
       geminiThinkingLevel: 'low',
     } as const;
-    await createAiGenerator(config, { warn: vi.fn() })?.generate(context({ impacts: [] }));
+    await createAiGenerator(config, { warn: vi.fn(), info: vi.fn() })?.generate(
+      context({ impacts: [] }),
+    );
     const [request] = sdk.generateContent.mock.calls[0] as [{ config: { thinkingConfig: object } }];
     expect(request.config.thinkingConfig).toEqual({ thinkingLevel: 'LOW' });
   });

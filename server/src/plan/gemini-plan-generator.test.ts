@@ -4,12 +4,11 @@ import { UpstreamError } from '../lib/errors.js';
 import { context } from '../test/fixtures.js';
 
 import type { AiFailure } from './ai-failure.js';
-import {
-  GEMINI_MAX_ATTEMPTS,
-  GeminiPlanGenerator,
-  type GenerateContentFn,
-} from './gemini-plan-generator.js';
+import { GeminiPlanGenerator, type GenerateContentFn } from './gemini-plan-generator.js';
 import { GEMINI_RESPONSE_SCHEMA, stripUnsupported } from './gemini-schema.js';
+
+// A lone model is tried twice: the first attempt and one retry.
+const GEMINI_MAX_ATTEMPTS = 2;
 
 const validOutput = {
   summary: 'Very poor air today; go out 14:00–16:00.',
@@ -25,7 +24,7 @@ const respond = (text: string | undefined) =>
 const generator = (generateContent: GenerateContentFn, timeoutMs?: number): GeminiPlanGenerator =>
   new GeminiPlanGenerator({
     generateContent,
-    model: 'test-model',
+    models: ['test-model'],
     ...(timeoutMs === undefined ? {} : { timeoutMs }),
   });
 
@@ -114,8 +113,8 @@ describe('GeminiPlanGenerator failure logging', () => {
     const warn = vi.fn<(details: object, message: string) => void>();
     const logging = new GeminiPlanGenerator({
       generateContent,
-      model: 'test-model',
-      logger: { warn },
+      models: ['test-model'],
+      logger: { warn, info: vi.fn() },
       ...(timeoutMs === undefined ? {} : { timeoutMs }),
     });
     await logging.generate(context()).catch(() => undefined);

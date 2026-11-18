@@ -1,7 +1,7 @@
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 import type { AppConfig } from '../config.js';
-import type { WarnLogger } from '../lib/log.js';
+import type { InfoLogger } from '../lib/log.js';
 
 import { GeminiPlanGenerator, type GenerateContentRequest } from './gemini-plan-generator.js';
 import type { PlanGenerator } from './plan-generator.js';
@@ -35,20 +35,20 @@ function toSdkRequest({ config, ...rest }: GenerateContentRequest) {
  * @returns The generator, or null when AI is not configured.
  */
 export function createAiGenerator(
-  config: Pick<AppConfig, 'geminiApiKey' | 'geminiModel' | 'geminiThinkingLevel'>,
-  logger: WarnLogger,
+  config: Pick<AppConfig, 'geminiApiKey' | 'geminiModels' | 'geminiThinkingLevel'>,
+  logger: InfoLogger,
 ): PlanGenerator | null {
-  const { geminiApiKey, geminiModel } = config;
-  if (geminiApiKey === null || geminiModel === null) {
+  const { geminiApiKey, geminiModels } = config;
+  if (geminiApiKey === null || geminiModels.length === 0) {
     logger.warn(
-      { hasKey: geminiApiKey !== null, hasModel: geminiModel !== null },
-      'GEMINI_API_KEY or GEMINI_MODEL is not set; serving offline plans only',
+      { hasKey: geminiApiKey !== null, hasModel: geminiModels.length > 0 },
+      'GEMINI_API_KEY or GEMINI_MODEL(S) is not set; serving offline plans only',
     );
     return null;
   }
   const ai = new GoogleGenAI({ apiKey: geminiApiKey });
   return new GeminiPlanGenerator({
-    model: geminiModel,
+    models: geminiModels,
     logger,
     ...(config.geminiThinkingLevel === null ? {} : { thinkingLevel: config.geminiThinkingLevel }),
     generateContent: (request) => ai.models.generateContent(toSdkRequest(request)),

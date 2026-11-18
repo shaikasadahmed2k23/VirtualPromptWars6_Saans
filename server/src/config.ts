@@ -25,6 +25,7 @@ const envSchema = z.object({
   WEB_DIST_DIR: z.string().min(1).default('web/dist'),
   GEMINI_API_KEY: optionalSecret,
   GEMINI_MODEL: optionalSecret,
+  GEMINI_MODELS: optionalSecret,
   GEMINI_THINKING_LEVEL: optionalSecret.pipe(z.enum(GEMINI_THINKING_LEVELS).nullable()),
 });
 
@@ -37,10 +38,19 @@ export interface AppConfig {
   readonly webDistDir: string;
   /** Google AI Studio key; null when unset (the server then serves offline plans only). */
   readonly geminiApiKey: string | null;
-  /** Gemini model id; always configured, never hardcoded. */
-  readonly geminiModel: string | null;
+  /** Gemini model ids in the order to try them; empty when none is configured, never hardcoded. */
+  readonly geminiModels: readonly string[];
   /** Reasoning effort for models that think by default; null sends no setting (works for every model). */
   readonly geminiThinkingLevel: (typeof GEMINI_THINKING_LEVELS)[number] | null;
+}
+
+// GEMINI_MODELS ("a,b") is the ordered list; the single GEMINI_MODEL keeps working when it is unset.
+function parseModels(list: string | null, single: string | null): readonly string[] {
+  const ids = (list ?? single ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => id !== '');
+  return [...new Set(ids)];
 }
 
 /**
@@ -58,7 +68,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     logLevel: parsed.LOG_LEVEL,
     webDistDir: parsed.WEB_DIST_DIR,
     geminiApiKey: parsed.GEMINI_API_KEY,
-    geminiModel: parsed.GEMINI_MODEL,
+    geminiModels: parseModels(parsed.GEMINI_MODELS, parsed.GEMINI_MODEL),
     geminiThinkingLevel: parsed.GEMINI_THINKING_LEVEL,
   };
 }

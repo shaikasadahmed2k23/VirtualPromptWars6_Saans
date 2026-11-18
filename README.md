@@ -216,16 +216,17 @@ Production build: `npm run build && npm start` serves the built UI and the API f
 
 ### Environment variables
 
-| Variable                | Default       | Purpose                                                                                              |
-| ----------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
-| `PORT`                  | `8080`        | HTTP port (Render injects it)                                                                        |
-| `HOST`                  | `0.0.0.0`     | Interface to bind                                                                                    |
-| `NODE_ENV`              | `development` | `development` / `production` / `test`                                                                |
-| `LOG_LEVEL`             | `info`        | pino level                                                                                           |
-| `WEB_DIST_DIR`          | `web/dist`    | Built UI directory                                                                                   |
-| `GEMINI_API_KEY`        | —             | Google AI Studio key, server-side only. If unset, offline plans only.                                |
-| `GEMINI_MODEL`          | —             | Gemini model id. If unset, offline plans only.                                                       |
-| `GEMINI_THINKING_LEVEL` | —             | Optional `low`/`medium`/`high` for models that think by default (cuts latency). Unset sends nothing. |
+| Variable                | Default       | Purpose                                                                                                      |
+| ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `PORT`                  | `8080`        | HTTP port (Render injects it)                                                                                |
+| `HOST`                  | `0.0.0.0`     | Interface to bind                                                                                            |
+| `NODE_ENV`              | `development` | `development` / `production` / `test`                                                                        |
+| `LOG_LEVEL`             | `info`        | pino level                                                                                                   |
+| `WEB_DIST_DIR`          | `web/dist`    | Built UI directory                                                                                           |
+| `GEMINI_API_KEY`        | —             | Google AI Studio key, server-side only. If unset, offline plans only.                                        |
+| `GEMINI_MODEL`          | —             | Gemini model id. If neither this nor `GEMINI_MODELS` is set, offline plans only.                             |
+| `GEMINI_MODELS`         | —             | Optional comma-separated model ids, tried in order once each within a 20 s budget; wins over `GEMINI_MODEL`. |
+| `GEMINI_THINKING_LEVEL` | —             | Optional `low`/`medium`/`high` for models that think by default (cuts latency). Unset sends nothing.         |
 
 ## Deployment
 
