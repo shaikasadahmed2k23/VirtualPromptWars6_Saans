@@ -41,3 +41,8 @@ Running log of autonomous work. Each entry: what's done, decisions made, anythin
 
 - Done: 62 web tests — hooks with a fake API (abort/supersede, debounce, retry, geolocation codes incl. unsupported), API client contract/error mapping, form validation (inline + summary + focus, location required, every select), combobox keyboard pattern, forecast strip + table, plan results for AI and fallback sources, language toggle (UI + `<html lang>` + Hindi plan request), geolocation denied/allowed, and axe on the page in empty, loading, results and error states. Coverage: 100 % lines/functions, 98 % branches.
 - Decisions: web `testTimeout` raised to 15 s (full-page jsdom flows with axe are slow); expected React error logs are silenced in the two "outside provider" tests.
+
+## 4.1 README
+
+- Done: problem → solution, a table mapping each line of the brief to code, a mermaid architecture diagram, impact formulas with every constant and its source, the NAQI table and the Severe-band assumption, plus security, efficiency, accessibility, testing, setup, env vars and deployment (Render + cron-job.org keep-alive).
+- Decisions: written for the judge and new contributors, and every claim is checked against the code (timeouts, caches, limits, headers).
