@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 
 import {
+  HOURS_PER_DAY,
   NAQI_MAX_INDEX,
   type AirResponse,
   type HourlyNaqi,
@@ -35,11 +36,12 @@ export function ForecastStrip({ data }: ForecastStripProps): JSX.Element {
       <figcaption>
         <h3 className="font-semibold">{t.forecast.heading}</h3>
         <p className="text-sm text-muted">{t.forecast.summary}</p>
+        <p className="text-sm text-muted">{t.forecast.windowsNote}</p>
       </figcaption>
       <WindowSummary label={t.forecast.best} window={data.bestWindow} marker="bg-accent" />
       <WindowSummary label={t.forecast.worst} window={data.worstWindow} marker="bg-ink" />
       <div aria-hidden="true" className="overflow-x-auto pb-2">
-        <ol className="flex h-36 min-w-max items-end gap-0.5">
+        <ol className="flex h-36 min-w-max items-end gap-0.5 pt-6">
           {data.hourly.map((hour, index) => (
             <Bar key={hour.time} hour={hour} index={index} data={data} />
           ))}
@@ -60,8 +62,14 @@ function Bar({ hour, index, data }: BarProps): JSX.Element {
   const best = inWindow(hour.time, data.bestWindow);
   const worst = inWindow(hour.time, data.worstWindow);
   const marker = best ? 'border-accent' : worst ? 'border-ink' : 'border-transparent';
+  const startsAfterWindowRange = index === HOURS_PER_DAY;
   return (
-    <li className="flex h-full w-3 flex-col items-center justify-end sm:w-3.5">
+    <li
+      className={`relative flex h-full w-3 flex-col items-center justify-end sm:w-3.5 ${
+        startsAfterWindowRange ? 'border-l-2 border-dashed border-ink' : ''
+      }`}
+    >
+      {startsAfterWindowRange && <BoundaryLabel />}
       <span
         className={`w-full rounded-t border-b-4 ${marker}`}
         style={{
@@ -73,6 +81,16 @@ function Bar({ hour, index, data }: BarProps): JSX.Element {
         {index % LABEL_EVERY_HOURS === 0 ? hour.time.slice(11, 13) : ''}
       </span>
     </li>
+  );
+}
+
+// Text plus a dashed line, so the 24-hour edge is never marked by colour alone.
+function BoundaryLabel(): JSX.Element {
+  const { t } = useI18n();
+  return (
+    <span className="absolute -top-5 right-1 whitespace-nowrap text-[10px] font-semibold">
+      {`${t.forecast.boundary} ▸`}
+    </span>
   );
 }
 

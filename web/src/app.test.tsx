@@ -43,7 +43,7 @@ describe('App', () => {
       { latitude: 28.65, longitude: 77.23 },
       expect.any(AbortSignal),
     );
-    expect(screen.getByRole('table', { name: 'Hourly NAQI forecast' })).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: /^Hourly NAQI forecast/ })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Make my plan' }));
     // The results UI is lazy-loaded; the first dynamic import is slow under coverage.
     const plan = await screen.findByRole('article', {}, { timeout: 5000 });

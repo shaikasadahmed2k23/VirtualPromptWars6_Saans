@@ -71,12 +71,14 @@ export const EN = {
   forecast: {
     heading: 'Next 48 hours',
     summary: 'Hourly NAQI. Taller bars mean dirtier air.',
-    best: 'Best window',
-    worst: 'Worst window',
+    best: 'Best window in the next 24 hours',
+    worst: 'Worst window in the next 24 hours',
+    windowsNote: 'Best and worst windows are picked from the next 24 hours only.',
+    boundary: 'Next 24 hours end here',
     window: (span: string, naqi: number, category: string): string =>
       `${span}, average NAQI ${String(naqi)} (${category})`,
     allUnsafe: 'Every waking hour is Severe; this is the least-bad time.',
-    tableCaption: 'Hourly NAQI forecast',
+    tableCaption: 'Hourly NAQI forecast (best and worst windows use the first 24 hours)',
     time: 'Time',
     naqi: 'NAQI',
     category: 'Category',
