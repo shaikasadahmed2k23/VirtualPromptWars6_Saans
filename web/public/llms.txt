@@ -4,3 +4,8 @@
 
 - The app is a single page at the site root; it needs no account and stores nothing.
 - Air-quality data comes from Open-Meteo. Impact figures are labelled estimates, not medical advice.
+
+## Links
+
+- [Source code](https://github.com/shaikasadahmed2k23/VirtualPromptWars6_Saans): README with the method, formulas and sources
+- [Open-Meteo air quality API](https://open-meteo.com/en/docs/air-quality-api): where the PM2.5 and PM10 data comes from
