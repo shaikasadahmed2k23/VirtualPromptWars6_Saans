@@ -102,6 +102,13 @@ export const COMMUTE_EXPOSURE = {
  */
 export const AVERAGE_COMMUTE_SPEED_KMH = 20;
 
+/**
+ * Smallest weekly CO2 saving worth showing for a commute switch, in kg. Below this the figure is
+ * noise (for example bus to metro with TERI's factors saves about 0.02 kg a week), so the CO2 line
+ * is hidden and the switch is judged on exposure alone.
+ */
+export const MIN_REPORTED_CO2_KG_PER_WEEK = 0.5;
+
 /** Each office day is a return trip. */
 export const TRIPS_PER_OFFICE_DAY = 2;
 

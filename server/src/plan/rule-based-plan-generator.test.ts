@@ -56,7 +56,7 @@ describe('RuleBasedPlanGenerator', () => {
       const { impactExplanations } = buildFallbackContent(
         context({ language, impacts: [{ ...blank, id: 'commute-metro', category: 'commute' }] }),
       );
-      expect(impactExplanations['commute-metro']).toMatch(/ 0 .* 0 µg \(0%\)/);
+      expect(impactExplanations['commute-metro']).toMatch(/0 µg \(0%\)/);
     });
 
     it('summarises a day with no outdoor window and a day where even the best is unsafe', () => {
@@ -77,6 +77,39 @@ describe('RuleBasedPlanGenerator', () => {
       ['22:00', '06:00'],
     ]);
   });
+
+  it.each([
+    {
+      co2: null,
+      ug: 105,
+      en: /^Switching from car to the metro cuts the PM2\.5/,
+      hi: /मेट्रो लेने से आने-जाने/,
+    },
+    {
+      co2: 4.21,
+      ug: 0,
+      en: /^Switching from car to the metro saves about 4\.21 kg of CO2 a week\. Estimate\.$/,
+      hi: /मेट्रो लेने से हर हफ़्ते लगभग 4\.21 किलो CO2 बचती है। अनुमान।$/,
+    },
+  ])(
+    'words the metro switch around the benefits it really has (co2 $co2, ug $ug)',
+    ({ co2, ug, en, hi }) => {
+      const impact: KnownImpactFacts = {
+        id: 'commute-metro',
+        category: 'commute',
+        exposureAvoided: { micrograms: ug, percent: ug === 0 ? 0 : 70 },
+        restHoursEquivalent: null,
+        co2SavedKgPerWeek: co2,
+      };
+      const text = (language: 'en' | 'hi'): string | undefined =>
+        buildFallbackContent(context({ language, impacts: [impact] })).impactExplanations[
+          'commute-metro'
+        ];
+      expect(text('en')).toMatch(en);
+      expect(text('hi')).toMatch(hi);
+      expect(text('en')).not.toMatch(/ 0 kg| 0 µg/);
+    },
+  );
 
   it('shows one block when the best and worst window coincide', () => {
     const { routine } = buildFallbackContent(context({ worstWindow: BEST }));

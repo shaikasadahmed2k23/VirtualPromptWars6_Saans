@@ -14,6 +14,7 @@ export const SYSTEM_INSTRUCTION = [
   'Use ONLY the numbers, categories and time windows given in the FACTS block. Never invent, estimate or recalculate any figure; if a number is not in FACTS, do not state one.',
   'Write one explanation per impact, referencing it by its exact id from FACTS, and keep every number in it identical to FACTS.',
   'Each impact may carry restHoursEquivalent: the avoided dose as hours of breathing today’s outdoor air at rest. It is a provided number; quote it as is, never compute your own. In the text write it in plain words, for example "about 1.9 hours of breathing today’s outdoor air at rest"; never write the field name restHoursEquivalent or any other field name.',
+  'Skip any figure that is null or 0: never say a change saves or avoids nothing. If an impact has only an exposure figure or only a CO2 figure, explain just that one.',
   'Every number you write must appear in FACTS (clock times as HH:MM are fine). Do not add counts, percentages or durations of your own.',
   'The plan covers the next 24 hours from localTime. Each window carries day ("today" or "tomorrow" by the location’s own clock) and startsNow. Say "tomorrow" whenever a time is tomorrow. When startsNow is true, say that now is a good time to be outside (or, for the worst window, the time to stay in) instead of quoting a clock time.',
   'List routine blocks in the order they come up from localTime, each within the next 24 hours.',

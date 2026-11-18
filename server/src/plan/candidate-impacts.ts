@@ -1,6 +1,7 @@
 import {
   AVERAGE_COMMUTE_SPEED_KMH,
   COMMUTE_EXPOSURE,
+  MIN_REPORTED_CO2_KG_PER_WEEK,
   MINUTES_PER_HOUR,
   OVERNIGHT_INDOOR_HOURS,
   TRIPS_PER_OFFICE_DAY,
@@ -29,7 +30,7 @@ export interface ImpactInputs {
   readonly currentPm25: number;
 }
 
-// Modes worth switching away from: the metro is cleaner for both CO2 and exposure.
+// Modes worth considering a switch from; each switch must still show a benefit (see commuteMetro).
 const SWITCHABLE_MODES: ReadonlySet<CommuteMode> = new Set([
   'petrolCar',
   'twoWheeler',
@@ -69,17 +70,25 @@ function commuteMetro(profile: UserProfile, pm25: number): Facts {
   if (!commutesToOffice(profile) || !SWITCHABLE_MODES.has(mode)) {
     return null;
   }
+  const exposure = exposureAvoided(
+    commuteDose(profile, pm25, mode),
+    commuteDose(profile, pm25, 'metro'),
+  );
+  const co2 = co2Saved({
+    distanceKm,
+    tripsPerWeek: profile.work.officeDaysPerWeek * TRIPS_PER_OFFICE_DAY,
+    fromMode: mode,
+    toMode: 'metro',
+  });
+  const co2Matters = co2 >= MIN_REPORTED_CO2_KG_PER_WEEK;
+  // Both calculators clamp at zero, so "no exposure benefit and no real CO2 benefit" covers a switch
+  // that is no better or even worse on both counts: it is never suggested.
+  if (exposure.micrograms === 0 && !co2Matters) {
+    return null;
+  }
   return facts('commute-metro', 'commute', {
-    exposureAvoided: exposureAvoided(
-      commuteDose(profile, pm25, mode),
-      commuteDose(profile, pm25, 'metro'),
-    ),
-    co2SavedKgPerWeek: co2Saved({
-      distanceKm,
-      tripsPerWeek: profile.work.officeDaysPerWeek * TRIPS_PER_OFFICE_DAY,
-      fromMode: mode,
-      toMode: 'metro',
-    }),
+    exposureAvoided: exposure,
+    co2SavedKgPerWeek: co2Matters ? co2 : null,
   });
 }
 

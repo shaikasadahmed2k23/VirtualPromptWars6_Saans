@@ -130,7 +130,19 @@ export const EN_COPY: PlanCopy = {
       title: 'Take the metro on office days',
       explain: (facts, { commuteMode }) => {
         const { ug, pct } = avoided(facts);
-        return `Switching from ${EN_COPY.modeNames[commuteMode]} to the metro saves about ${String(facts.co2SavedKgPerWeek ?? 0)} kg of CO2 a week and cuts the PM2.5 you breathe while commuting by about ${ug} µg (${pct}%) per office day. Estimate.`;
+        // Either benefit can be absent: a car to the metro changes no exposure, bus to metro saves no CO2;
+        // with neither on offer the exposure clause reads as 0 rather than leaving the sentence empty.
+        const benefits = [
+          ...(facts.co2SavedKgPerWeek === null
+            ? []
+            : [`saves about ${String(facts.co2SavedKgPerWeek)} kg of CO2 a week`]),
+          ...((facts.exposureAvoided?.micrograms ?? 0) > 0 || facts.co2SavedKgPerWeek === null
+            ? [
+                `cuts the PM2.5 you breathe while commuting by about ${ug} µg (${pct}%) per office day`,
+              ]
+            : []),
+        ];
+        return `Switching from ${EN_COPY.modeNames[commuteMode]} to the metro ${benefits.join(' and ')}. Estimate.`;
       },
     },
     'commute-n95': {

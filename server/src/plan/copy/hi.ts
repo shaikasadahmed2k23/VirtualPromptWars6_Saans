@@ -130,7 +130,17 @@ export const HI_COPY: PlanCopy = {
       title: 'दफ़्तर के दिनों में मेट्रो लें',
       explain: (facts, { commuteMode }) => {
         const { ug, pct } = avoided(facts);
-        return `${HI_COPY.modeNames[commuteMode]} की जगह मेट्रो लेने से हर हफ़्ते लगभग ${String(facts.co2SavedKgPerWeek ?? 0)} किलो CO2 बचती है और आने-जाने में साँस से जाने वाला PM2.5 हर दफ़्तर-दिन लगभग ${ug} µg (${pct}%) घटता है। अनुमान।`;
+        // Either benefit can be absent: a car to the metro changes no exposure, bus to metro saves no CO2;
+        // with neither on offer the exposure clause reads as 0 rather than leaving the sentence empty.
+        const benefits = [
+          ...(facts.co2SavedKgPerWeek === null
+            ? []
+            : [`हर हफ़्ते लगभग ${String(facts.co2SavedKgPerWeek)} किलो CO2 बचती है`]),
+          ...((facts.exposureAvoided?.micrograms ?? 0) > 0 || facts.co2SavedKgPerWeek === null
+            ? [`आने-जाने में साँस से जाने वाला PM2.5 हर दफ़्तर-दिन लगभग ${ug} µg (${pct}%) घटता है`]
+            : []),
+        ];
+        return `${HI_COPY.modeNames[commuteMode]} की जगह मेट्रो लेने से ${benefits.join(' और ')}। अनुमान।`;
       },
     },
     'commute-n95': {

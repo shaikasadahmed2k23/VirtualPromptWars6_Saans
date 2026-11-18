@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { UserProfile } from '@saans/shared';
+import { MIN_REPORTED_CO2_KG_PER_WEEK, type UserProfile } from '@saans/shared';
 
 import { BEST, PROFILE, WORST, window } from '../test/fixtures.js';
 
@@ -66,6 +66,48 @@ describe('deriveImpacts', () => {
     });
     // N95: 150 µg vs 15 µg.
     expect(find(rider, 'commute-n95')?.exposureAvoided).toEqual({ micrograms: 135, percent: 90 });
+  });
+
+  describe('mode-switch sanity: only suggest a switch with a meaningful benefit', () => {
+    const commuter = (mode: UserProfile['commute']['mode'], distanceKm: number, days = 5) =>
+      inputs({
+        commute: { mode, distanceKm },
+        work: { ...PROFILE.work, officeDaysPerWeek: days },
+      });
+
+    it('bus to metro: hides the ~0 CO2 line and shows the exposure benefit only', () => {
+      // 10 km × 2 × 5 days = 100 km/week × (0.02948 − 0.02929) kg = 0.02 kg, far below the threshold.
+      const impact = find(commuter('bus', 10), 'commute-metro');
+      expect(impact?.co2SavedKgPerWeek).toBeNull();
+      expect(impact?.exposureAvoided?.percent).toBe(40);
+    });
+
+    it('car to metro: keeps the CO2 line (above the threshold) and no exposure change', () => {
+      const impact = find(commuter('petrolCar', 10), 'commute-metro');
+      expect(impact?.co2SavedKgPerWeek).toBeGreaterThanOrEqual(MIN_REPORTED_CO2_KG_PER_WEEK);
+      expect(impact?.exposureAvoided?.micrograms).toBe(0);
+    });
+
+    it('auto-rickshaw to metro: both benefits are real, so both are shown', () => {
+      const impact = find(commuter('autoRickshaw', 12, 3), 'commute-metro');
+      expect(impact?.co2SavedKgPerWeek).toBeGreaterThanOrEqual(MIN_REPORTED_CO2_KG_PER_WEEK);
+      expect(impact?.exposureAvoided?.micrograms).toBeGreaterThan(0);
+    });
+
+    it('car to metro on a trivial trip is not suggested: no exposure change and CO2 under the threshold', () => {
+      // 1 km × 2 × 1 day = 2 km/week × 0.05844 kg = 0.12 kg.
+      expect(ids(commuter('petrolCar', 1, 1))).not.toContain('commute-metro');
+    });
+
+    it('applies the threshold at its boundary: kept at the threshold, dropped just under', () => {
+      // Car to metro saves 0.05844 kg/km; 0.5 kg needs 8.56 km per week, i.e. 4.28 km one way for 1 day.
+      expect(ids(commuter('petrolCar', 4.3, 1))).toContain('commute-metro');
+      expect(ids(commuter('petrolCar', 4.2, 1))).not.toContain('commute-metro');
+    });
+
+    it('still offers an N95 for the commute whether or not the metro switch is shown', () => {
+      expect(ids(commuter('twoWheeler', 1, 1))).toContain('commute-n95');
+    });
   });
 
   it.each([
