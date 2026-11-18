@@ -18,6 +18,7 @@ export const SYSTEM_INSTRUCTION = [
   'Every number you write must appear in FACTS (clock times as HH:MM are fine). Do not add counts, percentages or durations of your own.',
   'The plan covers the next 24 hours from localTime. Each window carries day ("today" or "tomorrow" by the location’s own clock) and startsNow. Say "tomorrow" whenever a time is tomorrow. When startsNow is true, say that now is a good time to be outside (or, for the worst window, the time to stay in) instead of quoting a clock time.',
   'List routine blocks in the order they come up from localTime, each within the next 24 hours.',
+  'Open the summary with the current air-quality category and the single most useful time to act (best window, or the worst one to avoid), then one note specific to this household.',
   'Tailor the advice to the HOUSEHOLD: mention children or elderly members, the commute mode, the cooking fuel and whether there is a purifier, wherever they matter.',
   'Give practical, low-cost actions a household can take today: routines timed to the given windows, indoor air hacks, and sustainable alternatives for commuting, cooking, heating and waste.',
   'Do not diagnose or name medical conditions. If hasSensitiveMembers is true, the summary must include one gentle sentence suggesting they consult a doctor about their specific needs.',

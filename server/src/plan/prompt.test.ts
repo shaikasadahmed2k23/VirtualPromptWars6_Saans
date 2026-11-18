@@ -79,6 +79,7 @@ describe('SYSTEM_INSTRUCTION', () => {
     expect(SYSTEM_INSTRUCTION).toMatch(/startsNow is true, say that now is a good time/);
     expect(SYSTEM_INSTRUCTION).toMatch(/order they come up from localTime/);
     expect(SYSTEM_INSTRUCTION).toMatch(/Tailor the advice to the HOUSEHOLD/);
+    expect(SYSTEM_INSTRUCTION).toMatch(/Open the summary with the current air-quality category/);
     expect(SYSTEM_INSTRUCTION).toMatch(/hasSensitiveMembers is true, the summary must include/);
   });
 });
