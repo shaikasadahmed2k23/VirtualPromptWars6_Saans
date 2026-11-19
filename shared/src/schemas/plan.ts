@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { IMPACT_CATEGORIES, INPUT_LIMITS, PERCENT_SCALE, PLAN_SOURCES } from '../constants.js';
+import {
+  IMPACT_CATEGORIES,
+  INPUT_LIMITS,
+  PERCENT_SCALE,
+  PLAN_SOURCES,
+} from '../constants/index.js';
 import { RELATIVE_DAYS } from '../relative-day.js';
 
 import { naqiResultSchema, outdoorWindowSchema } from './air.js';

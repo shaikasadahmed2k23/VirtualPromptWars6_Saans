@@ -1,4 +1,4 @@
-export * from './constants.js';
+export * from './constants/index.js';
 export * from './health.js';
 export * from './local-time.js';
 export * from './naqi-text.js';

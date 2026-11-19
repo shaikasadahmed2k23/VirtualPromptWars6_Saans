@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { LANGUAGES, NAQI_CATEGORIES } from './constants.js';
+import { LANGUAGES, NAQI_CATEGORIES } from './constants/index.js';
 import { NAQI_ADVISORIES, NAQI_CATEGORY_NAMES } from './naqi-text.js';
 
 describe('NAQI text', () => {

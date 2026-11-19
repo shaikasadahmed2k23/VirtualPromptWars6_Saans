@@ -7,7 +7,7 @@ import {
   HOURS_PER_DAY,
   INPUT_LIMITS,
   WORK_LOCATIONS,
-} from '../constants.js';
+} from '../constants/index.js';
 
 import {
   boundedInt,

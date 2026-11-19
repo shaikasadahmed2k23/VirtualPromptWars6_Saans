@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { HOURS_PER_DAY, INPUT_LIMITS, MINUTES_PER_HOUR, NAQI_MAX_INDEX } from '../constants.js';
+import {
+  HOURS_PER_DAY,
+  INPUT_LIMITS,
+  MINUTES_PER_HOUR,
+  NAQI_MAX_INDEX,
+} from '../constants/index.js';
 
 import {
   boundedInt,

@@ -117,7 +117,7 @@ flowchart LR
 
 ## How impact is calculated
 
-All constants live in [`shared/src/constants.ts`](shared/src/constants.ts), each with a source comment. Results are rounded once, at the end (`server/src/domain/rounding.ts`).
+All constants live in [`shared/src/constants/`](shared/src/constants/), one module per domain (exposure, emissions, NAQI breakpoints, time, limits), each with a source comment. Results are rounded once, at the end (`server/src/domain/rounding.ts`).
 
 ### Inhaled PM2.5 dose
 

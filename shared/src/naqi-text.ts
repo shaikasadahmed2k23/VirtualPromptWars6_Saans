@@ -1,4 +1,4 @@
-import type { Language, NaqiCategory } from './constants.js';
+import type { Language, NaqiCategory } from './constants/index.js';
 
 /** Display name of each NAQI category, per language. */
 export const NAQI_CATEGORY_NAMES = {

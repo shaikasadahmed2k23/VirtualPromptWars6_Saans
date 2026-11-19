@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { INPUT_LIMITS } from '../constants.js';
+import { INPUT_LIMITS } from '../constants/index.js';
 
 import { boundedText } from './primitives.js';
 

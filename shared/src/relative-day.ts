@@ -1,4 +1,4 @@
-import { HOURS_PER_DAY, MS_PER_HOUR } from './constants.js';
+import { HOURS_PER_DAY, MS_PER_HOUR } from './constants/index.js';
 import { localDate, startOfHour } from './local-time.js';
 
 /**

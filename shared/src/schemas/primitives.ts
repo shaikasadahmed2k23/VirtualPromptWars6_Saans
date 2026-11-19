@@ -6,7 +6,7 @@ import {
   LANGUAGES,
   NAQI_CATEGORIES,
   POLLUTANTS,
-} from '../constants.js';
+} from '../constants/index.js';
 
 /**
  * A whole number in `[min, max]` with field-named error messages.

@@ -29,7 +29,7 @@ npm run build          # web, then server
 
 - See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for layers, request flow and decisions.
 - **The LLM never invents numbers.** Every figure is computed in `server/src/domain/` (pure, no I/O); Gemini only explains it.
-- Every constant lives in `shared/src/constants.ts` with a one-line source comment. No magic numbers elsewhere. Impact figures are labelled as estimates in the UI.
+- Every constant lives in `shared/src/constants/` (one module per domain) with a one-line source comment. No magic numbers elsewhere. Impact figures are labelled as estimates in the UI.
 - NAQI follows the CPCB 2014 breakpoints exactly; overall index = max sub-index, linear interpolation within a band.
 - Dependencies are injected through interfaces (`AqiProvider`, `GeocodingProvider`, `PlanGenerator`, `Clock`, `fetch`) at the composition roots. No module-level singletons.
 - Gemini failures (timeout, error, invalid output) fall back to `RuleBasedPlanGenerator`.
