@@ -30,6 +30,8 @@ jobs:
         run: npm run lint
       - name: Format
         run: npm run format:check
+      - name: Duplication
+        run: npm run duplication
       - name: Test with coverage
         run: npm run test:coverage
       - name: Audit all dependencies

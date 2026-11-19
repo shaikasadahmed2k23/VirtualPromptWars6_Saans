@@ -1,0 +1,17 @@
+{
+  "path": ["shared/src", "server/src", "web/src"],
+  "format": ["typescript", "tsx"],
+  "minTokens": 50,
+  "threshold": 0,
+  "reporters": ["console"],
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/test/**",
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/package-lock.json"
+  ],
+  "gitignore": true,
+  "absolute": false
+}

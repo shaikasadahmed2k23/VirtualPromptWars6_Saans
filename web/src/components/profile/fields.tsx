@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import type { ChangeEvent, JSX, ReactNode } from 'react';
 
 import type { FieldName } from '../../hooks/use-profile-form.js';
 
@@ -48,10 +48,43 @@ function FieldText({ name, hint, error }: FieldBase): JSX.Element {
   );
 }
 
-/** Props for {@link NumberField}. */
-export interface NumberFieldProps extends FieldBase {
+function LabelledField({
+  field,
+  children,
+}: {
+  field: FieldBase;
+  children: ReactNode;
+}): JSX.Element {
+  return (
+    <div>
+      <label htmlFor={fieldId(field.name)} className="block font-medium">
+        {field.label}
+      </label>
+      {children}
+      <FieldText {...field} />
+    </div>
+  );
+}
+
+interface TextValueField extends FieldBase {
   readonly value: string;
   readonly onChange: (value: string) => void;
+}
+
+const textControlProps = (props: TextValueField) => ({
+  id: fieldId(props.name),
+  name: props.name,
+  value: props.value,
+  onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    props.onChange(event.target.value);
+  },
+  'aria-invalid': props.error !== undefined,
+  'aria-describedby': describedBy(props),
+  className: INPUT_CLASS,
+});
+
+/** Props for {@link NumberField}. */
+export interface NumberFieldProps extends TextValueField {
   readonly step?: string;
 }
 
@@ -61,28 +94,16 @@ export interface NumberFieldProps extends FieldBase {
  * @returns The field.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
-  const { name, label, value, onChange, error, step = '1' } = props;
+  const { step = '1' } = props;
   return (
-    <div>
-      <label htmlFor={fieldId(name)} className="block font-medium">
-        {label}
-      </label>
+    <LabelledField field={props}>
       <input
-        id={fieldId(name)}
-        name={name}
+        {...textControlProps(props)}
         type="number"
         inputMode={step === '1' ? 'numeric' : 'decimal'}
         step={step}
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-        aria-invalid={error !== undefined}
-        aria-describedby={describedBy(props)}
-        className={INPUT_CLASS}
       />
-      <FieldText {...props} />
-    </div>
+    </LabelledField>
   );
 }
 
@@ -160,10 +181,8 @@ export function CheckboxField({ name, label, checked, onChange }: CheckboxFieldP
 }
 
 /** Props for {@link TextAreaField}. */
-export interface TextAreaFieldProps extends FieldBase {
-  readonly value: string;
+export interface TextAreaFieldProps extends TextValueField {
   readonly maxLength: number;
-  readonly onChange: (value: string) => void;
 }
 
 /**
@@ -172,26 +191,9 @@ export interface TextAreaFieldProps extends FieldBase {
  * @returns The field.
  */
 export function TextAreaField(props: TextAreaFieldProps): JSX.Element {
-  const { name, label, value, maxLength, onChange, error } = props;
   return (
-    <div>
-      <label htmlFor={fieldId(name)} className="block font-medium">
-        {label}
-      </label>
-      <textarea
-        id={fieldId(name)}
-        name={name}
-        rows={3}
-        maxLength={maxLength}
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-        aria-invalid={error !== undefined}
-        aria-describedby={describedBy(props)}
-        className={INPUT_CLASS}
-      />
-      <FieldText {...props} />
-    </div>
+    <LabelledField field={props}>
+      <textarea {...textControlProps(props)} rows={3} maxLength={props.maxLength} />
+    </LabelledField>
   );
 }
