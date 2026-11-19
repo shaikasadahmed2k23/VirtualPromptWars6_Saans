@@ -195,7 +195,7 @@ Saans implements the CPCB National Air Quality Index (2014) for PM2.5 and PM10 (
 
 ## Security
 
-- **Strict CSP via helmet**: `default-src 'self'`, no inline scripts or styles, `frame-ancestors 'none'`, `object-src 'none'`. Also HSTS, `nosniff`, `no-referrer`, and same-origin CORP.
+- **Strict CSP via helmet**: `default-src 'self'`, no inline scripts or styles, `script-src-attr 'none'`, `frame-ancestors 'none'` (plus `X-Frame-Options: DENY`), `object-src 'none'`. Also HSTS, `nosniff`, `no-referrer`, same-origin CORP, and a `Permissions-Policy` that disables camera, microphone, payment, USB and FLoC and allows geolocation only for our own origin (for "Use my location"). Tests assert every header on both an API and the HTML response.
 - **No CORS grant.** The app is served from the same origin, so no CORS middleware is installed and cross-origin reads are blocked by the browser (tested).
 - **Rate limits per IP**: `POST /api/plan` 10/min, the rest of `/api` 60/min. The health check is exempt. `trust proxy` is set to one hop for Render.
 - **Every input is validated with zod**: strict objects (unknown keys rejected), numeric ranges, length caps, and a **10 kB** JSON body limit (413 beyond it).

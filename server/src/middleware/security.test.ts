@@ -1,11 +1,17 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { apiErrorSchema } from '@saans/shared';
 
 import type { AqiProvider } from '../providers/aqi-provider.js';
 import { PROFILE } from '../test/fixtures.js';
 import { createTestApp } from '../test/test-app.js';
+
+import { PERMISSIONS_POLICY } from './security.js';
 
 describe('rate limiting', () => {
   it('answers 429 once a client exceeds the plan limit', async () => {
@@ -38,20 +44,44 @@ describe('rate limiting', () => {
 });
 
 describe('security headers', () => {
-  it('sends a strict same-origin CSP and hardening headers', async () => {
-    const res = await request(createTestApp()).get('/api/health');
+  let webDistDir: string;
+
+  beforeAll(async () => {
+    webDistDir = await mkdtemp(path.join(tmpdir(), 'saans-headers-'));
+    await writeFile(path.join(webDistDir, 'index.html'), '<!doctype html><title>Saans</title>');
+  });
+
+  afterAll(async () => {
+    await rm(webDistDir, { recursive: true, force: true });
+  });
+
+  it.each([
+    ['an API response', '/api/health', /json/],
+    ['the HTML page', '/', /html/],
+  ])('hardens %s', async (_label, url, contentType) => {
+    const res = await request(createTestApp({ webDistDir })).get(url);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(contentType);
     const csp = res.headers['content-security-policy'];
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("script-src 'self'");
+    expect(csp).toContain("script-src-attr 'none'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
-    expect(csp).not.toContain('unsafe-inline');
+    expect(csp).not.toContain('unsafe-');
+    expect(res.headers['permissions-policy']).toBe(PERMISSIONS_POLICY);
+    expect(res.headers['strict-transport-security']).toContain('max-age=');
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['referrer-policy']).toBe('no-referrer');
-    expect(res.headers['strict-transport-security']).toContain('max-age=');
+    expect(res.headers['x-frame-options']).toBe('DENY');
     expect(res.headers['cross-origin-resource-policy']).toBe('same-origin');
   });
 
+  it('allows geolocation for our own origin only and disables other features', () => {
+    expect(PERMISSIONS_POLICY).toBe(
+      'camera=(), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()',
+    );
+  });
   it('grants no cross-origin access', async () => {
     const res = await request(createTestApp())
       .get('/api/geocode?q=Delhi')

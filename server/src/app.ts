@@ -8,6 +8,7 @@ import { createApiNotFoundHandler, createErrorHandler } from './middleware/error
 import { createRequestLogger } from './middleware/request-logging.js';
 import {
   DEFAULT_RATE_LIMITS,
+  createPermissionsPolicy,
   createRateLimiter,
   createSecurityHeaders,
   type RateLimits,
@@ -63,6 +64,7 @@ export function createApp(deps: AppDeps): Express {
   app.set('trust proxy', TRUSTED_PROXY_HOPS);
   app.use(createRequestLogger(deps.logger, randomUUID));
   app.use(createSecurityHeaders());
+  app.use(createPermissionsPolicy());
   app.use(compression());
   app.use('/api', createApiRouter(deps));
   app.use(createWebAppRouter(deps.webDistDir));
