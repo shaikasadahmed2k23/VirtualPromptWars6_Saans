@@ -13,7 +13,7 @@ Saans is one TypeScript codebase in three npm workspaces, shipped as one contain
 | Services   | `server/src/services/`   | `AirService` (forecast → snapshot) and `PlanService` (orchestration, plan cache, AI-or-fallback choice).                               |
 | Routes     | `server/src/routes/`     | Thin Express routers: validate input with the shared schemas, call a service, return JSON.                                             |
 | Middleware | `server/src/middleware/` | Security headers, rate limits, request logging with ids, the central error handler.                                                    |
-| Wiring     | `server/src/index.ts`    | The composition root: builds real providers, caches and services from config, then listens.                                            |
+| Wiring     | `server/src/compose.ts`  | The composition root: builds real providers, caches and services from config. `index.ts` only composes, listens and shuts down.        |
 | Web        | `web/src/`               | React 18 + Tailwind. `api/` (typed client), `hooks/` (all state and logic), `components/` (presentational), `i18n/` (en, hi).          |
 
 Dependencies point inwards: routes → services → domain; providers and generators are reached only through their interfaces.
@@ -58,8 +58,8 @@ Dependencies point inwards: routes → services → domain; providers and genera
 ### 5. Dependency injection at composition roots
 
 - **Context:** Tests must never touch the network or the real clock.
-- **Decision:** Providers, generators, `Clock`, `fetch` and the logger are interfaces passed in by `server/src/index.ts` and `web/src/main.tsx`. No module-level singletons.
-- **Consequence:** Every layer is tested with fakes.
+- **Decision:** Providers, generators, `Clock`, `fetch` and the logger are interfaces passed in by `server/src/compose.ts` and `web/src/main.tsx`. No module-level singletons.
+- **Consequence:** Every layer is tested with fakes, including the composition root itself.
 
 ### 6. Strict CSP and jitless zod
 
