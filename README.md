@@ -31,6 +31,8 @@ The whole interface is available in **English and Hindi**.
 
 ## Architecture
 
+Layers, the `POST /api/plan` request flow and the engineering decisions are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ```mermaid
 flowchart LR
   subgraph Browser["web/ — React 18 + Tailwind"]
@@ -247,7 +249,7 @@ Gemini setup check: `npm run gemini:check` lists the models your `GEMINI_API_KEY
 shared/   zod schemas (profile, air, plan, errors), sourced constants, local-time and NAQI text helpers
 server/   domain/ (pure) · providers/ · plan/ · services/ · routes/ · middleware/ · lib/
 web/      api/ · hooks/ · i18n/ (en, hi) · components/ · naqi/
-docs/     PROGRESS.md (build log and decisions) · REVIEW.md (code-quality review)
+docs/     ARCHITECTURE.md (layers, request flow, engineering decisions)
 scripts/  check-gemini.mjs (npm run gemini:check)
 ```
 
