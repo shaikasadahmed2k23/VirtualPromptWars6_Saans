@@ -16,7 +16,7 @@ const generatorFailure = (...attempts: unknown[]): UpstreamError =>
   new UpstreamError('AI plan generation failed', { cause: new AggregateError(attempts) });
 
 describe('classifyAiFailure', () => {
-  it('judges a whole-generator failure by its last attempt', () => {
+  it('classifies a whole-generator failure by its last attempt', () => {
     const failure = generatorFailure(new AiTimeoutError('slow'), new FakeSdkError(429));
     expect(classifyAiFailure(failure)).toEqual({
       reason: 'http_error',
