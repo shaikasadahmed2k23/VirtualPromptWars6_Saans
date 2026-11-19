@@ -202,7 +202,7 @@ Saans implements the CPCB National Air Quality Index (2014) for PM2.5 and PM10 (
 - **One error shape**, `{ error: { code, message } }`, from a central middleware. Unknown errors become a generic 500, logged with the request id; stack traces never reach clients.
 - **The Gemini key stays server-side**, read from `GEMINI_API_KEY`. The model comes from `GEMINI_MODEL` and is never hardcoded. Exact coordinates are not sent to Gemini.
 - **Prompt-injection guard.** The household's free-text notes are cleaned of control characters, length-capped, and placed in a fenced `HOUSEHOLD` data block marked as untrusted. `<` is JSON-escaped so the block can't be closed early (tested with an attack string).
-- **Dependencies.** `npm audit --omit=dev` is clean and enforced in CI. Remaining `npm audit` findings come from one dev-only tooling package (picomatch ReDoS, no patched release yet) and never ship in the container.
+- **Supply chain.** `npm audit --audit-level=high` covers every dependency (dev included) and is enforced in CI. Every GitHub Action is pinned to a full commit SHA, workflows run with read-only `contents` permission, and CodeQL (`security-extended`) scans every push to `main` and runs weekly.
 - **Container** runs as the non-root `node` user with production dependencies only.
 
 ## Efficiency
@@ -277,7 +277,7 @@ Gemini setup check: `npm run gemini:check` lists the models your `GEMINI_API_KEY
 1. **Container.** One multi-stage `Dockerfile` builds the web app and the server, then ships the compiled output with production dependencies to a non-root runtime image. It declares a `HEALTHCHECK` on `/api/health`.
 2. **Render.** Create a Web Service from this repo with the Docker runtime. Set `GEMINI_API_KEY` and `GEMINI_MODEL` as secret environment variables, and set the health-check path to `/api/health`.
 3. **Keep-alive.** A cron-job.org job pings `/api/health` every 10 minutes so the free instance doesn't sleep. The route is never rate-limited.
-4. **CI.** GitHub Actions runs install → typecheck → lint → format → tests with coverage → production audit → build, then builds the Docker image and probes `/api/health` from a running container.
+4. **CI.** GitHub Actions runs install → typecheck → lint → format → tests with coverage → dependency audit → build, then builds the Docker image and probes `/api/health` from a running container.
 
 ## Repository layout
 
