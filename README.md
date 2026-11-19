@@ -1,8 +1,8 @@
 # Saans: breathe easier through smog season
 
 - **Live demo:** https://virtualpromptwars6-saans.onrender.com
-- **Demo video:** TBD
-- **LinkedIn post:** TBD
+- **Demo video:** <VIDEO_LINK>
+- **LinkedIn post:** <LINKEDIN_LINK>
 
 Saans (साँस, "breath") is a GenAI assistant for families living through severe winter smog in Indian cities. Pick a location and describe your household. Saans then builds a plan for today:
 
@@ -14,6 +14,42 @@ Saans (साँस, "breath") is a GenAI assistant for families living through 
 The whole interface is available in **English and Hindi**.
 
 > All impact figures are estimates computed from published factors. NAQI values from hourly data are indicative; the official NAQI is a 24-hour average. Saans is not medical advice.
+
+## Chosen vertical
+
+**Urban Air Quality Assistant**: families in Indian cities living through severe winter smog.
+
+## Approach and logic
+
+Every plan follows one deterministic decision flow, and the language model sits only at the end:
+
+1. **Location + profile** → the hourly PM2.5/PM10 forecast for the next 48 h and the household's lifestyle (members, commute, office days, exercise, purifier, cooking fuel, language).
+2. **NAQI** → each hour is scored with the CPCB National Air Quality Index ([method](#naqi-method)).
+3. **Windows** → the cleanest and dirtiest 2-hour waking windows become the time-blocked routine.
+4. **Impacts** → only the recommendations relevant to this household are kept, each with PM2.5 avoided and CO₂ saved computed from sourced factors ([formulas](#how-impact-is-calculated)).
+5. **Gemini explains** → Gemini turns those facts into plain-language advice in English or Hindi. It never produces a number; if it fails, a rule-based generator writes the plan from the same facts ([architecture](#architecture)).
+
+## How the solution works
+
+1. Open the app and choose **Use my location** or search for a city.
+2. Saans shows the **air now**: the NAQI, its category as text, icon and colour, the dominant pollutant and the CPCB health advisory.
+3. A **48-hour strip** marks the best and worst windows to be outdoors.
+4. Fill in the **household profile**: who lives there, how they commute and how far, office days, exercise habit, purifier and cooking fuel.
+5. Submit to get **today's plan**: a time-blocked routine, indoor air hacks and sustainable alternatives.
+6. Each recommendation shows **its impact** in numbers (µg of PM2.5 avoided and kg of CO₂ saved per week), labelled as an estimate.
+7. Switch between **English and Hindi** at any time; the whole interface and the plan follow.
+
+## Assumptions
+
+- NAQI values from hourly forecasts are **indicative**; the official CPCB NAQI is a 24-hour average.
+- Inhalation rates of 0.5 / 1.0 / 2.5 m³/h for rest, light activity and moderate exercise (US EPA _Exposure Factors Handbook_).
+- Protection factors of 0.6 indoors with windows closed, 0.25 with a HEPA purifier and 0.1 for a well-fitted N95 are **estimates** from published studies.
+- Commutes run at **20 km/h** door to door, two trips per office day.
+- CO₂ factors are TERI's Delhi per-passenger figures (public transport 2019-20); the **metro uses TERI's upper bound**, so metro savings are conservative.
+- CPCB publishes no upper Severe breakpoint, so the Severe band is **interpolated up to PM2.5 380 / PM10 510** µg/m³ and capped at 500.
+- Saans gives general guidance and is **not medical advice**.
+
+Details and sources: [How impact is calculated](#how-impact-is-calculated) · [NAQI method](#naqi-method).
 
 ---
 
