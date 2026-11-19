@@ -219,9 +219,10 @@ Saans implements the CPCB National Air Quality Index (2014) for PM2.5 and PM10 (
 - **City search** follows the WAI-ARIA combobox pattern (arrows, Enter, Escape, `aria-activedescendant`, live result count).
 - **The 48-hour chart** has a visually hidden table alternative.
 - **Plan results** are in a polite `aria-live` region.
-- **Language**: the en/hi toggle updates `<html lang>`, and each plan carries its own `lang`.
+- **Language**: the en/hi toggle updates `<html lang>` and the document title, and each plan carries its own `lang`. A bilingual `<noscript>` message explains that JavaScript is needed.
+- **Target size**: every interactive control is at least 24 × 24 CSS px (WCAG 2.5.8).
 - **Motion and focus**: `prefers-reduced-motion` is respected, and focus is always visible.
-- **axe** runs on the whole page in the empty, loading, results and error states.
+- **axe** runs on the whole page in every state (initial, loading, error, air loaded, English plan, Hindi plan) and must report zero violations.
 - **Lighthouse**: the strict `Cross-Origin-Opener-Policy: same-origin` header makes headless Chrome fail with `NO_NAVSTART`; run it with `--chrome-flags="--headless=new --disable-features=CrossOriginOpenerPolicy,BrowsingContextGroupSwap --disable-site-isolation-trials"`. Reports (`lh-*.json`) are git-ignored.
 
 ## Testing

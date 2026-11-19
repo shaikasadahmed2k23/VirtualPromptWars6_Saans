@@ -6,6 +6,7 @@ import type { Messages } from './en.js';
 export const HI: Messages = {
   appName: 'साँस',
   tagline: 'स्मॉग के मौसम में आसानी से साँस लें',
+  documentTitle: 'साँस — सर्दियों के स्मॉग में आपका सहायक',
   skipLink: 'मुख्य सामग्री पर जाएँ',
   language: { label: 'Switch language: English', short: 'English' },
   footer:

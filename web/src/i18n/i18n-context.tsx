@@ -31,7 +31,8 @@ export interface I18nProviderProps {
 }
 
 /**
- * Holds the UI language and keeps `<html lang>` in sync so screen readers switch voice.
+ * Holds the UI language and keeps `<html lang>` and the document title in sync, so screen readers
+ * switch voice and the tab title reads in the chosen language.
  * @param props - Optional starting language and the subtree.
  * @returns The provider element.
  */
@@ -39,6 +40,7 @@ export function I18nProvider({ initialLanguage = 'en', children }: I18nProviderP
   const [language, setLanguage] = useState<Language>(initialLanguage);
   useEffect(() => {
     document.documentElement.lang = language;
+    document.title = DICTIONARIES[language].documentTitle;
   }, [language]);
   const value = useMemo<I18nValue>(
     () => ({

@@ -9,6 +9,7 @@ const advisories: Readonly<Record<NaqiCategory, string>> = NAQI_ADVISORIES.en;
 export const EN = {
   appName: 'Saans',
   tagline: 'Breathe easier through smog season',
+  documentTitle: 'Saans — Winter smog assistant',
   skipLink: 'Skip to main content',
   language: { label: 'भाषा बदलें: हिन्दी', short: 'हिन्दी' },
   footer:

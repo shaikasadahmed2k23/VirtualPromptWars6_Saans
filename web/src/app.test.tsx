@@ -44,6 +44,7 @@ describe('App', () => {
       expect.any(AbortSignal),
     );
     expect(screen.getByRole('table', { name: /^Hourly NAQI forecast/ })).toBeInTheDocument();
+    await expectNoAxeViolations(container);
     await user.click(screen.getByRole('button', { name: 'Make my plan' }));
     // The results UI is lazy-loaded; the first dynamic import is slow under coverage.
     const plan = await screen.findByRole('article', {}, { timeout: 5000 });
@@ -97,12 +98,16 @@ describe('App', () => {
     expect(await screen.findByText('Offline guidance')).toBeInTheDocument();
   });
 
-  it('switches the whole interface to Hindi and requests a Hindi plan', async () => {
+  it('switches the whole interface to Hindi and shows a Hindi plan accessibly', async () => {
     const user = userEvent.setup();
-    const api = fakeApi();
-    renderWithProviders(<App geolocation={null} />, { api });
+    const api = fakeApi({
+      createPlan: vi.fn(() => Promise.resolve({ ...PLAN_RESPONSE, language: 'hi' as const })),
+    });
+    const { container } = renderWithProviders(<App geolocation={null} />, { api });
+    expect(document.title).toBe('Saans — Winter smog assistant');
     await user.click(screen.getByRole('button', { name: 'भाषा बदलें: हिन्दी' }));
     expect(document.documentElement.lang).toBe('hi');
+    expect(document.title).toBe('साँस — सर्दियों के स्मॉग में आपका सहायक');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'स्मॉग के मौसम में आसानी से साँस लें',
     );
@@ -112,6 +117,9 @@ describe('App', () => {
     await waitFor(() => {
       expect(api.createPlan.mock.calls[0]?.[0]).toMatchObject({ language: 'hi' });
     });
+    const plan = await screen.findByRole('article', {}, { timeout: 5000 });
+    expect(plan).toHaveAttribute('lang', 'hi');
+    await expectNoAxeViolations(container);
   });
 
   it('explains a denied location permission and keeps city search available', async () => {

@@ -110,7 +110,10 @@ function ErrorSummary({
           <ul className="mt-2 list-disc pl-5">
             {fields.map(([name, errorKey]) => (
               <li key={name}>
-                <a href={`#${fieldId(name)}`} className="text-danger underline">
+                <a
+                  href={`#${fieldId(name)}`}
+                  className="inline-block min-h-6 py-0.5 text-danger underline"
+                >
                   {labels[name]}: {t.profile.fieldErrors[errorKey]}
                 </a>
               </li>

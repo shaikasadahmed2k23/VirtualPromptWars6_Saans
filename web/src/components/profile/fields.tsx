@@ -152,7 +152,7 @@ export function CheckboxField({ name, label, checked, onChange }: CheckboxFieldP
         onChange={(event) => {
           onChange(event.target.checked);
         }}
-        className="mt-1 size-5 accent-accent"
+        className="size-6 shrink-0 accent-accent"
       />
       <label htmlFor={fieldId(name)}>{label}</label>
     </div>
